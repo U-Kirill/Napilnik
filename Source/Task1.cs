@@ -2,18 +2,23 @@
 {
   using System;
 
-  public interface IReadOnlyWeaponStats
+  public interface IDamageable
+  {
+    void ApplyDamage(int damage);
+  }
+
+  public interface IWeaponStats
   {
     int Damage { get; }
     int Bullets { get; }
   }
-  
+
   public class Weapon
   {
     private Stats _stats;
 
     
-    public Weapon(IReadOnlyWeaponStats stats)
+    public Weapon(IWeaponStats stats)
     {
       if (stats.Bullets < 0)
         throw new ArgumentOutOfRangeException(nameof(stats.Bullets));
@@ -24,7 +29,7 @@
       _stats = new Stats(stats);
     }
 
-    public IReadOnlyWeaponStats CurrentStats => _stats;
+    public IWeaponStats CurrentStats => _stats;
 
     public void Fire(IDamageable player)
     {
@@ -38,9 +43,9 @@
     public bool CanFire() =>
       _stats.Bullets > 0;
     
-    private struct Stats : IReadOnlyWeaponStats
+    private struct Stats : IWeaponStats
     {
-      public Stats(IReadOnlyWeaponStats weaponStats)
+      public Stats(IWeaponStats weaponStats)
       {
         Damage = weaponStats.Damage;
         Bullets = weaponStats.Bullets;
@@ -69,20 +74,15 @@
         throw new ArgumentOutOfRangeException(nameof(damage));
 
       int overdamage = Math.Max(damage - Health, 0);
-      Health -= damage + overdamage;
+      Health -= damage - overdamage;
     }
-  }
-
-  public interface IDamageable
-  {
-    void ApplyDamage(int damage);
   }
 
   public class Bot
   {
     private Weapon _weapon;
 
-    public Bot(IReadOnlyWeaponStats stats)
+    public Bot(IWeaponStats stats)
     {
       _weapon = new Weapon(stats);
     }
