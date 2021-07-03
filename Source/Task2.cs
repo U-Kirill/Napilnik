@@ -28,7 +28,7 @@ namespace Tasks
 
 //Вывод всех товаров в корзине
 
-      Console.WriteLine(cart.Order().Paylink);
+      Console.WriteLine(cart.GetOrder().Paylink);
       Console.ReadKey();
     }
 
@@ -82,25 +82,55 @@ namespace Tasks
       int index = GetIndex(good);
       _cells[index] = _cells[index].RemoveItem(count);
       
+      AddToReserved(good, count);
+    }
+
+    public void ProcessOrder(IOrder order )
+    {
+      foreach (Cell cell in order.Cells)
+      {
+        RemoveFromReserved(cell.Good, cell.Count);
+        Delive(cell.Good, cell.Count);
+      }
+    }
+
+    private void RemoveFromReserved(Good good, int count)
+    {
+      int indexInReserved = GetIndexInReserved(good);
+
+      if (indexInReserved == -1)
+        throw new InvalidOperationException("Can't remove not reserved item");
+
+      if (_reserved[indexInReserved].Count < count)
+        throw new InvalidOperationException("Can't remove more when reserved");
+
+      _reserved[indexInReserved] = _reserved[indexInReserved].RemoveItem(count);
+    }
+
+    public void CancelOrder(IOrder order)
+    {
+      foreach (Cell cell in order.Cells)
+      {
+        int indexInReserved = GetIndexInReserved(cell.Good);
+
+        if (indexInReserved == -1)
+          throw new InvalidOperationException("Can't remove not reserved item");
+      
+        if (_reserved[indexInReserved].Count < cell.Count)
+          throw new InvalidOperationException("Can't remove more when reserved");
+        
+        _reserved[indexInReserved] = _reserved[indexInReserved].RemoveItem(cell.Count);
+      }
+    }
+
+    private void AddToReserved(Good good, int count)
+    {
       int indexInReserved = GetIndexInReserved(good);
 
       if (indexInReserved != -1)
         _reserved[indexInReserved] = _cells[indexInReserved].AddItem(count);
       else
         _reserved.Add(new Cell(good, count));
-    }
-
-    public void Remove(Good good, int count)
-    {
-      int indexInReserved = GetIndexInReserved(good);
-
-      if (indexInReserved == -1)
-        throw new InvalidOperationException("Can't remove not reserved item");
-      
-      if (_reserved[indexInReserved].Count < count)
-        throw new InvalidOperationException("Can't remove more when reserved");
-      
-      
     }
 
     private int GetIndex(Good good) => 
@@ -177,34 +207,43 @@ namespace Tasks
       _order.CellStorage.Delive(good, count);
     }
 
-    public Order Order()
+    public IOrder GetOrder()
     {
-      foreach (Cell cell in _order.CellStorage.Cells)
-      {
-        _warehouse.Remove(cell.Good, cell.Count);
-      }
+      _warehouse.ProcessOrder(_order);
+      
       return _order;
-      foreach (Cell cell in _cartWarehouse.Cells) 
-        _warehouse.Reserve(cell.Good, cell.Count);
-
-      return new Order(_cartWarehouse.Cells);
     }
-  }
 
-  public class Order
-  {
-    public ICellStorage CellStorage { get; } = new Warehouse();
-    public IReadOnlyList<Cell> CartWarehouseCells { get; }
-
-    private IPaylinkProvider _paylinkProvider = new RandomPaylinkProvider(10);
-
-    public Order()
+    public void Cancel()
     {
-      Paylink = _paylinkProvider.GetLink();
+      _warehouse.CancelOrder(_order);
     }
 
-    public object Paylink { get; set; }
+    private class Order : IOrder
+    {
+      public ICellStorage CellStorage { get; } = new Warehouse();
+      public IReadOnlyList<Cell> Cells => CellStorage.Cells;
+
+      private IPaylinkProvider _paylinkProvider = new RandomPaylinkProvider(10);
+
+      public Order()
+      {
+        Paylink = _paylinkProvider.GetLink();
+      }
+
+      public object Paylink { get; set; }
+    }
   }
+
+  public interface IOrder
+  {
+
+    IReadOnlyList<Cell> Cells { get; }
+    object Paylink { get; set; }
+
+  }
+
+
 
   public class RandomPaylinkProvider : IPaylinkProvider
   {
