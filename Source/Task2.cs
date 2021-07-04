@@ -27,7 +27,6 @@ namespace Tasks
       cart.Add(iPhone11, 3); //при такой ситуации возникает ошибка так, как нет нужного количества товара на складе
 
 //Вывод всех товаров в корзине
-warehouse.
 
       Console.WriteLine(cart.GetOrder().Paylink);
       Console.ReadKey();
@@ -53,13 +52,14 @@ warehouse.
 
     void Extract(Good good, int count);
 
+    bool CanExtract(Good good, int count);
+
   }
 
   public class Warehouse : ICellStorage
   {
     List<Cell> _cells = new List<Cell>();
-    List<Cell> _reserved = new List<Cell>();
-    
+
     
     public IReadOnlyList<Cell> Cells => _cells;
 
@@ -73,95 +73,22 @@ warehouse.
        _cells.Add(new Cell(good, count));
     }
 
-    public void Extract(Good good, int count)
-    {
-      int index = GetIndex(good);
-      
-      ValidateIndex(index, count, _cells);
-      
-      _cells[index] = _cells[index].RemoveItem(count);
-    }
-
-    public bool CanReserve(Good good, int count)
+    public bool CanExtract(Good good, int count)
     {
       int index = GetIndex(good);
 
       return index != -1 && count <= _cells[index].Count;
     }
 
-    public void AddToReserved(Good good, int count)
+    public void Extract(Good good, int count)
     {
-      int indexInReserved = GetIndexInReserved(good);
+      int index = GetIndex(good);
 
-      if (indexInReserved != -1)
-        _reserved[indexInReserved] = _cells[indexInReserved].AddItem(count);
-      else
-        _reserved.Add(new Cell(good, count));
-    }
-
-    public void RemoveFromReserved(Good good, int count)
-    {
-      int indexInReserved = GetIndexInReserved(good);
-
-      ValidateIndex(indexInReserved, count, _reserved);
-
-      _reserved[indexInReserved] = _reserved[indexInReserved].RemoveItem(count);
-    }
-
-    private void Reserve(Good good, int count)
-    {
-      Extract(good, count);
-
-      AddToReserved(good, count);
-    }
-
-    private void CancelReserve(Good good, int count)
-    {
-      RemoveFromReserved(good, count);
-
-      Delive(good, count);
-    }
-
-    private void ValidateIndex(int index, int goodCount, IReadOnlyList<Cell> collection)
-    {
-      if (index == -1)
-        throw new InvalidOperationException("Can't remove not reserved item");
-
-      if (collection[index].Count < goodCount)
-        throw new InvalidOperationException("Can't remove more when reserved");
-    }
-
-    private void ProcessOrder(IOrder order )
-    {
-      foreach (Cell cell in order.Cells)
-      {
-        RemoveFromReserved(cell.Good, cell.Count);
-        Delive(cell.Good, cell.Count);
-      }
-    }
-
-    private void CancelOrder(IOrder order)
-    {
-      foreach (Cell cell in order.Cells)
-      {
-        int indexInReserved = GetIndexInReserved(cell.Good);
-
-        if (indexInReserved == -1)
-          throw new InvalidOperationException("Can't remove not reserved item");
-      
-        if (_reserved[indexInReserved].Count < cell.Count)
-          throw new InvalidOperationException("Can't remove more when reserved");
-        
-        _reserved[indexInReserved] = _reserved[indexInReserved].RemoveItem(cell.Count);
-      }
+      _cells[index] = _cells[index].RemoveItem(count);
     }
 
     private int GetIndex(Good good) => 
       _cells.FindIndex(x => x.Good.Name == good.Name);
-
-    private int GetIndexInReserved(Good good) => 
-      _reserved.FindIndex(x => x.Good.Name == good.Name);
-
   }
   public struct Cell
   {
@@ -226,48 +153,52 @@ warehouse.
     
     public void Add(Good good, int count)
     {
-      if (!_warehouse.CanReserve(good, count))
+      if (!_warehouse.CanExtract(good, count))
         throw new InvalidOperationException("Good is not contains in warehouse or not enough amount");
 
       Reserve(good, count);
     }
 
-    public IOrder GetOrder()
+    public void Remove(Good good, int count)
     {
-      
-      
-      return _order;
+      if (!_cellStorage.CanExtract(good, count))
+        throw new InvalidOperationException("Good is not contains in cart or not enough amount");
+
+      CancelReserve(good, count);
     }
 
     public void Cancel()
     {
-      foreach (Cell cell in _cellStorage.Cells)
-      {
-        _warehouse.Re
-      }
+      foreach (Cell cell in _cellStorage.Cells) 
+        CancelReserve(cell.Good, cell.Count);
+    }
+
+    public IOrder GetOrder()
+    {
+      return new Order(_cellStorage.Cells);
     }
 
     private void Reserve(Good good, int count)
     {
       _warehouse.Extract(good, count);
-      _warehouse.AddToReserved(good, count);
       _cellStorage.Delive(good, count);
     }
     
     private void CancelReserve(Good good, int count)
     {
       _cellStorage.Extract(good, count);
-      _warehouse.RemoveFromReserved(good, count);
       _warehouse.Delive(good, count);
     }
 
     private class Order : IOrder
     {
-      private IPaylinkProvider _paylinkProvider = new RandomPaylinkProvider(10);
+      private readonly IPaylinkProvider _paylinkProvider = new RandomPaylinkProvider(10);
+      private readonly IReadOnlyList<Cell> _cellStorageCells;
 
-      
-      public Order()
+
+      public Order(IReadOnlyList<Cell> cellStorageCells)
       {
+        _cellStorageCells = cellStorageCells;
         Paylink = _paylinkProvider.GetLink();
       }
 
