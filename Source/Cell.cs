@@ -16,23 +16,23 @@ namespace Tasks
     public Good Good { get; }
     public int Count { get; }
 
-    public Cell AddItem(int count)
+    public Cell IncreaseQuantity(int quantity)
     {
-      if (count <= 0)
-        throw new ArgumentOutOfRangeException(nameof(count));
+      if (quantity <= 0)
+        throw new ArgumentOutOfRangeException(nameof(quantity));
 
-      return new Cell(Good, Count + count);
+      return new Cell(Good, Count + quantity);
     }
     
-    public Cell RemoveItem(int count)
+    public Cell ReduceQuantity(int quantity)
     {
-      if (count <= 0)
-        throw new ArgumentOutOfRangeException(nameof(count));
+      if (quantity <= 0)
+        throw new ArgumentOutOfRangeException(nameof(quantity));
       
-      if (count > Count)
+      if (quantity > Count)
         throw new InvalidOperationException("Can't remove more than contain cell");
 
-      return new Cell(Good, Count - count);
+      return new Cell(Good, Count - quantity);
     }
   }
 }

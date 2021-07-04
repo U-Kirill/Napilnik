@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Tasks
 {
@@ -14,7 +15,7 @@ namespace Tasks
       int index = GetIndex(good);
 
       if (index != -1)
-        _cells[index] = _cells[index].AddItem(count);
+        _cells[index] = _cells[index].IncreaseQuantity(count);
       else
         _cells.Add(new Cell(good, count));
     }
@@ -29,8 +30,11 @@ namespace Tasks
     public void Extract(Good good, int count)
     {
       int index = GetIndex(good);
+      
+      if (index == -1)
+        throw new InvalidOperationException("Can't remove not existed item");
 
-      _cells[index] = _cells[index].RemoveItem(count);
+      _cells[index] = _cells[index].ReduceQuantity(count);
     }
 
     private int GetIndex(Good good) => 

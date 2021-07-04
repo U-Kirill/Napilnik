@@ -29,6 +29,5 @@ namespace Tasks
       Console.WriteLine(cart.GetOrder().Paylink);
       Console.ReadKey();
     }
-
   }
 }

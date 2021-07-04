@@ -58,18 +58,17 @@ namespace Tasks
     private class Order : IOrder
     {
       private readonly IPaylinkProvider _paylinkProvider = new RandomPaylinkProvider(10);
-      private readonly IReadOnlyList<Cell> _cellStorageCells;
-
+      
 
       public Order(IReadOnlyList<Cell> cellStorageCells)
       {
-        _cellStorageCells = cellStorageCells;
+        Cells = cellStorageCells;
         Paylink = _paylinkProvider.GetLink();
       }
 
       public IReadOnlyList<Cell> Cells { get; }
 
-      public object Paylink { get; set; }
+      public string Paylink { get; }
     }
   }
 }
