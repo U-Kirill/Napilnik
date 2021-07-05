@@ -1,10 +1,9 @@
-﻿namespace Napilnik
-{
-  using System;
+﻿using System;
 
+namespace Napilnik
+{
   public class Weapon : IWeapon
   {
-
     public Weapon(int damage, int bullets)
     {
       if (bullets < 0)
@@ -35,6 +34,5 @@
 
     public bool CanFire() =>
       Bullets > 0;
-
   }
 }
