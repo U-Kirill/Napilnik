@@ -4,6 +4,8 @@
 
   public interface IDamageable
   {
+    event Action Damaged;
+
     void ApplyDamage(int damage);
   }
 
@@ -59,6 +61,8 @@
 
   public class Player : IDamageable
   {
+    public event Action Damaged;
+
     public Player(int health)
     {
       if (health <= 0)
@@ -76,6 +80,8 @@
 
       int overdamage = Math.Max(damage - Health, 0);
       Health -= damage - overdamage;
+
+      Damaged?.Invoke();
     }
   }
 
