@@ -4,27 +4,35 @@ namespace Napilnik
 {
   public class Player : IDamageable
   {
+    private readonly Health _health;
+
     public event Action Damaged;
 
-    public Player(int health)
+    public Player(int maxHealth)
     {
-      if (health <= 0)
-        throw new ArgumentOutOfRangeException(nameof(health));
-
-      Health = health;
+      _health = new Health(maxHealth);
     }
 
-    public int Health { get; private set; }
-
+    public IReadOnlyHealth Health => _health;
+    
     public void TakeDamage(int damage)
     {
-      if (damage < 0)
-        throw new ArgumentOutOfRangeException(nameof(damage));
-
-      int overdamage = Math.Max(damage - Health, 0);
-      Health -= damage - overdamage;
+      _health.Damage(damage);
 
       Damaged?.Invoke();
     }
+
+    public void Heal(int heal)
+    {
+      _health.Heal(heal);
+    }
+  }
+
+  public interface IReadOnlyHealth
+  {
+
+    int CurrentHealth { get; }
+    int MaxHealth { get; }
+
   }
 }

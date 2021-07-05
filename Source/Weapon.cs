@@ -18,7 +18,7 @@ namespace Napilnik
 
     public int Bullets { get; private set; }
 
-    public int Damage { get; private set; }
+    public int Damage { get; }
 
     public void Fire(IDamageable player)
     {

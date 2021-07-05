@@ -4,7 +4,7 @@ namespace Napilnik
 {
   public class Bot
   {
-    private IWeapon _weapon;
+    private readonly IWeapon _weapon;
 
     public Bot(IWeapon weapon)
     {
