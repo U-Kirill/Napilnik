@@ -10,6 +10,7 @@
   public interface IWeaponStats
   {
     int Damage { get; }
+
     int Bullets { get; }
   }
 
@@ -17,7 +18,6 @@
   {
     private Stats _stats;
 
-    
     public Weapon(IWeaponStats stats)
     {
       if (stats.Bullets < 0)
@@ -42,7 +42,7 @@
 
     public bool CanFire() =>
       _stats.Bullets > 0;
-    
+
     private struct Stats : IWeaponStats
     {
       public Stats(IWeaponStats weaponStats)
@@ -52,6 +52,7 @@
       }
 
       public int Damage { get; }
+
       public int Bullets { get; set; }
     }
   }
@@ -62,7 +63,7 @@
     {
       if (health <= 0)
         throw new ArgumentOutOfRangeException(nameof(health));
-      
+
       Health = health;
     }
 

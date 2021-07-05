@@ -23,7 +23,7 @@ namespace Tasks
       Cart cart = shop.Cart();
       cart.Add(iPhone12, 4);
       cart.Add(iPhone11, 3); //при такой ситуации возникает ошибка так, как нет нужного количества товара на складе
-      
+
 //Вывод всех товаров в корзине
 
       Console.WriteLine(cart.GetOrder().Paylink);
