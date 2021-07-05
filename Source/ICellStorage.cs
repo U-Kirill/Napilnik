@@ -1,16 +1,10 @@
-﻿using System.Collections.Generic;
-
-namespace Tasks
+﻿namespace Tasks
 {
-  public interface ICellStorage
+  public interface ICellStorage : ICellStorageView
   {
-    IReadOnlyList<Cell> Cells { get; }
-
     void Delive(Good good, int count);
 
     void Extract(Good good, int count);
-
-    bool CanExtract(Good good, int count);
 
   }
 }

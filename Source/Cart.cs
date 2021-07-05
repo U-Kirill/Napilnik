@@ -14,22 +14,18 @@ namespace Tasks
       _warehouse = warehouse;
     }
 
-    public IReadOnlyList<Cell> Cells => _cellStorage.Cells;
+    public ICellStorageView Storage => _cellStorage;
     
     public void Add(Good good, int count)
     {
-      if (!_warehouse.CanExtract(good, count))
-        throw new InvalidOperationException("Good is not contains in warehouse or not enough amount");
-
-      Reserve(good, count);
+      _warehouse.Extract(good, count);
+      _cellStorage.Delive(good, count);
     }
 
     public void Remove(Good good, int count)
     {
-      if (!_cellStorage.CanExtract(good, count))
-        throw new InvalidOperationException("Good is not contains in cart or not enough amount");
-
-      CancelReserve(good, count);
+      _cellStorage.Extract(good, count);
+      _warehouse.Delive(good, count);
     }
 
     public void Cancel()
@@ -45,14 +41,12 @@ namespace Tasks
 
     private void Reserve(Good good, int count)
     {
-      _warehouse.Extract(good, count);
-      _cellStorage.Delive(good, count);
+      
     }
     
     private void CancelReserve(Good good, int count)
     {
-      _cellStorage.Extract(good, count);
-      _warehouse.Delive(good, count);
+      
     }
 
     private class Order : IOrder

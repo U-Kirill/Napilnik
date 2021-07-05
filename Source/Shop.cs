@@ -11,6 +11,5 @@
 
     public Cart Cart() => 
       new Cart(_warehouse);
-
   }
 }
