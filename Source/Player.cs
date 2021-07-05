@@ -27,12 +27,4 @@ namespace Napilnik
       _health.Heal(heal);
     }
   }
-
-  public interface IReadOnlyHealth
-  {
-
-    int CurrentHealth { get; }
-    int MaxHealth { get; }
-
-  }
 }
