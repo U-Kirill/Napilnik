@@ -1,4 +1,6 @@
-﻿namespace Tasks
+﻿using System;
+
+namespace Napilnik.Encapsulation
 {
   public class Good
   {
@@ -6,6 +8,9 @@
 
     public Good(string name)
     {
+      if (name == null)
+        throw new NullReferenceException(nameof(name));
+      
       Name = name;
     }
   }

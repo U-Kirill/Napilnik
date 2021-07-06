@@ -1,14 +1,17 @@
 ﻿using System;
 
-namespace Tasks
+namespace Napilnik.Encapsulation
 {
   public struct Cell
   {
     public Cell(Good good, int count = 0)
     {
-      if(count < 0)
+      if (good == null)
+        throw new NullReferenceException(nameof(good));
+
+      if (count < 0)
         throw new ArgumentOutOfRangeException(nameof(count));
-        
+
       Good = good;
       Count = count;
     }
@@ -34,5 +37,8 @@ namespace Tasks
 
       return new Cell(Good, Count - quantity);
     }
+
+    public override string ToString() => 
+      $"{nameof(Good)}: {Good}, {nameof(Count)}: {Count}";
   }
 }

@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
-namespace Tasks
+namespace Napilnik.Encapsulation
 {
   public class Warehouse : ICellStorage
   {
-    List<Cell> _cells = new List<Cell>();
-
+    private readonly List<Cell> _cells = new List<Cell>();
     
     public IReadOnlyList<Cell> Cells => _cells;
 
@@ -30,14 +30,25 @@ namespace Tasks
     public void Extract(Good good, int count)
     {
       int index = GetIndex(good);
-      
+
       if (index == -1)
-        throw new InvalidOperationException("Can't remove not existed item");
+        throw new InvalidOperationException($"Can't remove not existed item {good?.Name}");
 
       _cells[index] = _cells[index].ReduceQuantity(count);
     }
 
     private int GetIndex(Good good) => 
-      _cells.FindIndex(x => x.Good.Name == good.Name);
+      _cells.FindIndex(x => x.Good.Name == good?.Name);
+
+    public override string ToString()
+    {
+      StringBuilder builder = new StringBuilder();
+
+      foreach (Cell cell in _cells) 
+        builder.AppendLine(cell.ToString());
+
+      return builder.ToString();
+    }
+
   }
 }

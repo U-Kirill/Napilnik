@@ -1,4 +1,4 @@
-﻿namespace Tasks
+﻿namespace Napilnik.Encapsulation
 {
   public interface ICellStorage : ICellStorageView
   {

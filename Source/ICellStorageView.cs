@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Tasks
+namespace Napilnik.Encapsulation
 {
   public interface ICellStorageView
   {

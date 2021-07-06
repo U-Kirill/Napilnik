@@ -1,16 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 
-namespace Tasks
+namespace Napilnik.Encapsulation
 {
   public class Cart
   {
     private readonly Warehouse _warehouse;
     private readonly ICellStorage _cellStorage = new Warehouse();
 
-
     public Cart(Warehouse warehouse)
     {
+      if (warehouse == null)
+        throw new NullReferenceException(nameof(warehouse));
+      
       _warehouse = warehouse;
     }
 
@@ -30,39 +31,13 @@ namespace Tasks
 
     public void Cancel()
     {
-      foreach (Cell cell in _cellStorage.Cells) 
-        CancelReserve(cell.Good, cell.Count);
+      foreach (Cell cell in _cellStorage.Cells)
+        Remove(cell.Good, cell.Count);
     }
 
     public IOrder GetOrder()
     {
       return new Order(_cellStorage.Cells);
-    }
-
-    private void Reserve(Good good, int count)
-    {
-      
-    }
-    
-    private void CancelReserve(Good good, int count)
-    {
-      
-    }
-
-    private class Order : IOrder
-    {
-      private readonly IPaylinkProvider _paylinkProvider = new RandomPaylinkProvider(10);
-      
-
-      public Order(IReadOnlyList<Cell> cellStorageCells)
-      {
-        Cells = cellStorageCells;
-        Paylink = _paylinkProvider.GetLink();
-      }
-
-      public IReadOnlyList<Cell> Cells { get; }
-
-      public string Paylink { get; }
     }
   }
 }
