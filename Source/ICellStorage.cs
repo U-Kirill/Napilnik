@@ -5,6 +5,5 @@
     void Delive(Good good, int count);
 
     void Extract(Good good, int count);
-
   }
 }
