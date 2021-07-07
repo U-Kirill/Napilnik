@@ -1,6 +1,6 @@
 ﻿namespace Napilnik.Encapsulation
 {
-  public interface ICellStorage : ICellStorageView
+  public interface ICellStorage : IReadOnlyStorage
   {
     void Delive(Good good, int count);
 

@@ -2,7 +2,7 @@
 
 namespace Napilnik.Encapsulation
 {
-  public interface ICellStorageView
+  public interface IReadOnlyStorage
   {
     IReadOnlyList<Cell> Cells { get; }
     

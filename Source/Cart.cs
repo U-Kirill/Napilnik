@@ -15,7 +15,7 @@ namespace Napilnik.Encapsulation
       _warehouse = warehouse;
     }
 
-    public ICellStorageView Storage => _cellStorage;
+    public IReadOnlyStorage Storage => _cellStorage;
     
     public void Add(Good good, int count)
     {
@@ -35,9 +35,8 @@ namespace Napilnik.Encapsulation
         Remove(cell.Good, cell.Count);
     }
 
-    public IOrder GetOrder()
-    {
-      return new Order(_cellStorage.Cells);
-    }
+    public IOrder GetOrder() => 
+      new Order(_cellStorage.Cells);
+
   }
 }

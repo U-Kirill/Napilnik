@@ -29,7 +29,7 @@ namespace Napilnik.Encapsulation
       Console.ReadKey();
     }
 
-    private static void DisplayCellStorage(ICellStorageView cellStorageView) =>
-      Console.WriteLine(cellStorageView.ToString());
+    private static void DisplayCellStorage(IReadOnlyStorage cellStorage) =>
+      Console.WriteLine(cellStorage.ToString());
   }
 }
