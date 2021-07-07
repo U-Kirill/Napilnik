@@ -19,23 +19,23 @@ namespace Napilnik.Encapsulation
     public Good Good { get; }
     public int Count { get; }
 
-    public Cell IncreaseQuantity(int quantity)
+    public Cell Add(int count)
     {
-      if (quantity <= 0)
-        throw new ArgumentOutOfRangeException(nameof(quantity));
+      if (count <= 0)
+        throw new ArgumentOutOfRangeException(nameof(count));
 
-      return new Cell(Good, Count + quantity);
+      return new Cell(Good, Count + count);
     }
     
-    public Cell ReduceQuantity(int quantity)
+    public Cell Remove(int count)
     {
-      if (quantity <= 0)
-        throw new ArgumentOutOfRangeException(nameof(quantity));
+      if (count <= 0)
+        throw new ArgumentOutOfRangeException(nameof(count));
       
-      if (quantity > Count)
+      if (count > Count)
         throw new InvalidOperationException("Can't remove more than contain cell");
 
-      return new Cell(Good, Count - quantity);
+      return new Cell(Good, Count - count);
     }
 
     public override string ToString() => 

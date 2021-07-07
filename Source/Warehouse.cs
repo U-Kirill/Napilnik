@@ -15,7 +15,7 @@ namespace Napilnik.Encapsulation
       int index = GetIndex(good);
 
       if (index != -1)
-        _cells[index] = _cells[index].IncreaseQuantity(count);
+        _cells[index] = _cells[index].Add(count);
       else
         _cells.Add(new Cell(good, count));
     }
@@ -34,7 +34,7 @@ namespace Napilnik.Encapsulation
       if (index == -1)
         throw new InvalidOperationException($"Can't remove not existed item {good?.Name}");
 
-      _cells[index] = _cells[index].ReduceQuantity(count);
+      _cells[index] = _cells[index].Remove(count);
     }
 
     private int GetIndex(Good good) => 
