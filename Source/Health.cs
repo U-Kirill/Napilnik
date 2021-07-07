@@ -24,16 +24,5 @@ namespace Napilnik
       int overDamage = Math.Max(damage - CurrentHealth, 0);
       CurrentHealth -= damage - overDamage;
     }
-
-    public void Heal(int heal)
-    {
-      if (heal < 0)
-        throw new ArgumentOutOfRangeException(nameof(heal));
-
-      int availableHeal = MaxHealth - CurrentHealth;
-
-      int overHealth = Math.Max(heal - availableHeal, 0);
-      CurrentHealth += heal - overHealth;
-    }
   }
 }

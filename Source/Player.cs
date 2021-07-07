@@ -21,10 +21,5 @@ namespace Napilnik
 
       Damaged?.Invoke();
     }
-
-    public void Heal(int heal)
-    {
-      _health.Heal(heal);
-    }
   }
 }
