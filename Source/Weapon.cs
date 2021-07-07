@@ -4,20 +4,21 @@ namespace Napilnik
 {
   public class Weapon : IWeapon
   {
+    private readonly int _bulletsPerShoot = 1;
+
     public Weapon(int damage, int bullets)
     {
-      if (bullets < 0)
-        throw new ArgumentOutOfRangeException(nameof(bullets));
-
       if (damage < 0)
         throw new ArgumentOutOfRangeException(nameof(damage));
 
-      Bullets = bullets;
+      CurrentBullets = bullets;
       Damage = damage;
     }
 
-    public int Bullets { get; private set; }
+    public int CurrentBullets { get; private set; }
     public int Damage { get; }
+
+    private int BulletsAfterShoot => CurrentBullets - _bulletsPerShoot;
 
     public void Fire(IDamageable player)
     {
@@ -27,11 +28,11 @@ namespace Napilnik
       if (!CanFire())
         throw new InvalidOperationException("Can't fire without bullets");
 
-      Bullets -= 1;
+      CurrentBullets = BulletsAfterShoot;
       player.TakeDamage(Damage);
     }
 
     public bool CanFire() =>
-      Bullets > 0;
+      BulletsAfterShoot >= 0;
   }
 }

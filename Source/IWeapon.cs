@@ -2,7 +2,7 @@
 {
   public interface IWeapon
   {
-    int Bullets { get; }
+    int CurrentBullets { get; }
     int Damage { get; }
 
     void Fire(IDamageable player);
