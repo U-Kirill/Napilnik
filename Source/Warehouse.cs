@@ -24,7 +24,7 @@ namespace Napilnik.Encapsulation
     {
       int index = GetIndex(good);
 
-      return index != -1 && count <= _cells[index].Count;
+      return index != -1 && _cells[index].CanRemove(count) == false;
     }
 
     public void Extract(Good good, int count)
@@ -49,6 +49,5 @@ namespace Napilnik.Encapsulation
 
       return builder.ToString();
     }
-
   }
 }

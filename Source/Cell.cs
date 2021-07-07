@@ -32,11 +32,14 @@ namespace Napilnik.Encapsulation
       if (count <= 0)
         throw new ArgumentOutOfRangeException(nameof(count));
       
-      if (count > Count)
+      if (!CanRemove(count))
         throw new InvalidOperationException("Can't remove more than contain cell");
 
       return new Cell(Good, Count - count);
     }
+
+    public bool CanRemove(int count) =>
+      count <= Count;
 
     public override string ToString() => 
       $"{nameof(Good)}: {Good}, {nameof(Count)}: {Count}";
