@@ -42,7 +42,7 @@ namespace Source
 
   public class Rooms
   {
-    private List<Room> _rooms;
+    private List<Room> _rooms = new List<Room>();
     private int _roomsCreated;
 
     public IRoom CreateRoomAndConnect(Player player)
