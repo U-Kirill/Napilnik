@@ -11,12 +11,13 @@ namespace Source
     public static void Main(string[] args)
     {
       Game game = new Game();
+      Rooms rooms = game.Rooms;
 
       Player player1 = new Player("Noob");
-      IRoom room1 = game.CreateRoomAndConnect(player1);
+      IRoom room1 = rooms.CreateRoomAndConnect(player1);
 
       Player player2 = new Player("Pro");
-      game.Connect(player2, room1);
+      rooms.Connect(player2, room1);
     }
 
   }
@@ -35,47 +36,11 @@ namespace Source
 
   public class Game
   {
-
-    private List<Room> _rooms;
-    private int _roomsCreated;
-    private int _connectionsCreated;
-
-    public IRoom CreateRoomAndConnect(Player player)
-    {
-      Room room = CrateRoom();
-      Connect(player, room);
-
-      return room;
-    }
-
-    public void Connect(Player player, Room room)
-    {
-      player = player ?? throw new NullReferenceException();
-      room = room ?? throw new NullReferenceException();
-
-      if (!_rooms.Contains(room))
-        throw new InvalidOperationException("room is not exist");
-
-      if (_rooms.Exists(room => room.Players.Contains(player)))
-        throw new InvalidOperationException("One of the rooms already contain this player");
-
-      room.Add(player);
-    }
-
-    private Room CrateRoom()
-    {
-      var room = new Room(GetNextRoomId());
-      _rooms.Add(room);
-      return room;
-    }
-
-    private int GetNextRoomId() =>
-      _roomsCreated++;
-
+    
+    public Rooms Rooms { get; } = new Rooms();
   }
 
-
-  public class Romms
+  public class Rooms
   {
     private List<Room> _rooms;
     private int _roomsCreated;
@@ -88,7 +53,7 @@ namespace Source
       return room;
     }
 
-    public IReadOnlyList<IRoom> Rooms => _rooms;
+    public IReadOnlyList<IRoom> All => _rooms;
     
     public void Connect(Player player, IRoom room)
     {
@@ -187,4 +152,3 @@ internal class Chat
     public string[] Messages { get; set; }
 
   }
-}
