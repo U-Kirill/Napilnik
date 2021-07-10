@@ -22,8 +22,7 @@ namespace GameLobbyTest
     {
       var player = new Player("Ioan");
       IConnection connection = CreateRoomAndConnect(player, 10);
-
-
+      
       Assert.AreEqual(true, connection.Room.Connections.Any(x =>  x.Player == player));
     }
 
@@ -46,6 +45,15 @@ namespace GameLobbyTest
       IConnection connection = CreateRoomAndConnect(player, 10);
       
       Assert.Throws<InvalidOperationException>(() => _lobby.Connect(player, connection.Room));
+    }
+    
+    [Test]
+    public void AddingPlayerInDifferentRoomsTrowsException()
+    {
+      var player = new Player("Ioan");
+      IConnection connection = CreateRoomAndConnect(player, 10);
+      
+      Assert.Throws<InvalidOperationException>(() => CreateRoomAndConnect(player, 10));
     }
 
     [Test]
@@ -85,22 +93,56 @@ namespace GameLobbyTest
       var player = new Player("Ioan");
       IConnection connection = CreateRoomAndConnect(player, 10);
 
-      var sentText = "Hello Room!";
-      Message receivedMessage = SendAndReceiveMessage(connection, sentText);
+      Message receivedMessage = SendAndReceiveMessage(connection, "Hello Room!");
 
       Assert.AreEqual(player, receivedMessage.Sender);
     }
 
     [Test]
-    public void IfReachNesseseryReadyPlayersCountRoomeGoesToGameState()
+    public void CanWriteInGameSate()
     {
       var player = new Player("Ioan");
-      IConnection connection = CreateRoomAndConnect(player, 10);
+      IConnection connection = CreateRoomAndConnect(player, 1);
 
-      var sentText = "Hello Room!";
-      Message receivedMessage = SendAndReceiveMessage(connection, sentText);
+      _lobby.Connect(new Player("Gilbert"), connection.Room);
+      
+      Message receivedMessage = SendAndReceiveMessage(connection, "Hello Room!");
 
       Assert.AreEqual(player, receivedMessage.Sender);
+    }
+    
+    [Test]
+    public void WriteInGameSateIfPlayerWarUnreadyInStartGameTrowsException()
+    {
+      var player = new Player("Ioan");
+      IConnection connection1 = CreateRoomAndConnect(player, 1);
+      IConnection connection2 = _lobby.Connect(new Player("Gilbert"), connection1.Room);
+
+      connection1.Room.MakeReady(player);
+      Assert.Throws<InvalidOperationException>(() => SendAndReceiveMessage(connection2, "Hello Room!"));
+    }
+    
+    [Test]
+    public void CanWriteIfRoomHasMoreConnectionsThanPossibleReadyConnections()
+    {
+      var player = new Player("Ioan");
+      IConnection connection1 = CreateRoomAndConnect(player, 1);
+      IConnection connection2 = _lobby.Connect(new Player("Gilbert"), connection1.Room);
+
+      Message receivedMessage = SendAndReceiveMessage(connection2, "Hello Room!");
+    
+      Assert.AreEqual(connection2.Player, receivedMessage.Sender);
+    }
+    
+    [Test]
+    public void MakeReadyIfPlayerNotActiveTrowsException()
+    {
+      var player = new Player("Ioan");
+      IConnection connection1 = CreateRoomAndConnect(player, 1);
+      IConnection connection2 = _lobby.Connect(new Player("Gilbert"), connection1.Room);
+
+      connection1.Room.MakeReady(player);
+      Assert.Throws<InvalidOperationException>(() => connection2.Room.MakeReady(player));
     }
     
     private Message SendAndReceiveMessage(IConnection connection, string text)

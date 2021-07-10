@@ -64,10 +64,9 @@ namespace Source
       }
 
       public int MaxPlayers { get; }
+      public IReadOnlyList<IPlayerConnection> Connections => _connections;
 
       private int ReadyPlayersCount => _connections.Count(x => x.IsPlayerReady);
-
-      public IReadOnlyList<IPlayerConnection> Connections => _connections;
 
       public IConnection Connect(Player player)
       {
@@ -82,40 +81,48 @@ namespace Source
       public void MakeReady(Player player)
       {
         player = player ?? throw new NullReferenceException(nameof(player));
-
-        Connection connectionWithPlayer = _connections
-          .FirstOrDefault(x => x.Player == player);
-
-        if (connectionWithPlayer == null)
-          throw new InvalidOperationException("Can't make ready player which not exist in this room");
+        
+        if (!IsActivePlayer(player))
+          throw new InvalidOperationException("Player is not active");
 
         if (ReadyPlayersCount >= MaxPlayers)
           throw new InvalidOperationException("Reached Max Ready Players count");
         
+        Connection connectionWithPlayer = _connections
+          .FirstOrDefault(x => x.Player == player);
+        
+        if(connectionWithPlayer.IsPlayerReady)
+          throw new InvalidOperationException("Player already ready");
+          
         connectionWithPlayer.MakeReady(player);
 
         if (CanStartGame())
           StartGame();
       }
 
-      private void StartGame() => 
-        _state = new GameState(this);
+      public void SendMessage(Player sender, string message)
+      {
+        if (!IsActivePlayer(sender))
+          throw new InvalidOperationException("Is not active player");
 
-      private bool CanStartGame() => 
-        ReadyPlayersCount == MaxPlayers;
-
-
-      // при смене состояния изменять стейт подборщика коннектов. И результат кидать в исключенте
-
-      public void SendMessage(Player sender, string message) =>
         _chat.Write(sender, message);
+      }
+
+      public bool IsActivePlayer(Player sender) =>
+        _state.ActiveConnection.Any(x => x.Player == sender);
 
       private void Inform(Message message)
       {
         foreach (Connection connectio in _state.ActiveConnection)
           connectio.ReceiveMessage(message);
       }
+      
+      private void StartGame() => 
+        _state = new GameState(this);
 
+      private bool CanStartGame() => 
+        ReadyPlayersCount == MaxPlayers;
+      
       private abstract class State
       {
         public State(Room room)
@@ -126,7 +133,6 @@ namespace Source
         public abstract IReadOnlyList<Connection> ActiveConnection { get; }
 
         protected Room Room { get; }
-
       }
 
       private class WaitPlayerState : State
@@ -145,7 +151,6 @@ namespace Source
         public override IReadOnlyList<Connection> ActiveConnection =>
           Room._connections.Where(x => x.IsPlayerReady).ToList();
       }
-
     }
   }
 }

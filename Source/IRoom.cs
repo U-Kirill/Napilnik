@@ -1,13 +1,11 @@
-﻿using System.Collections.Generic;
-
-namespace Source
+﻿namespace Source
 {
-  public interface IRoom
+  public interface IRoom : IReadOnlyRoom
   {
     void MakeReady(Player player);
     void SendMessage(Player sender, string message);
-    IReadOnlyList<IPlayerConnection> Connections { get; }
-    int MaxPlayers { get; }
+
+    bool IsActivePlayer(Player sender);
 
   }
 }
