@@ -8,13 +8,13 @@ namespace Source
     public static void Main(string[] args)
     {
       Game game = new Game();
-      Rooms rooms = game.Rooms;
+      Lobby lobby = game.Lobby;
 
       Player player1 = new Player("Noob");
-      IRoom room1 = rooms.CreateRoomAndConnect(player1, 10);
+      IRoom room1 = lobby.CreateRoom(10);
 
       Player player2 = new Player("Pro");
-      rooms.Connect(player2, room1);
+      lobby.Connect(player2, room1);
     }
 
   }
@@ -34,6 +34,6 @@ namespace Source
   public class Game
   {
     
-    public Rooms Rooms { get; } = new Rooms();
+    public Lobby Lobby { get; } = new Lobby();
   }
 }

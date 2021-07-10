@@ -7,5 +7,7 @@ namespace Source
     Player Player { get; }
 
     bool IsPlayerReady { get; }
+    IRoom Room { get; }
+
   }
 }

@@ -8,20 +8,21 @@ namespace GameLobbyTest
   public class Tests
   {
 
-    private Rooms _rooms;
+    private Lobby _lobby;
 
     [SetUp]
     public void Setup()
     {
       Game game = new Game();
-      _rooms = game.Rooms;
+      _lobby = game.Lobby;
     }
 
     [Test]
     public void CanCrateRoomAndPlayerWillHere()
     {
       var player = new Player("Ioan");
-      IRoom room = CreateRoom(player, 10);
+      IRoom room = CreateRoom(10);
+      _lobby.Connect(player, room);
 
       Assert.AreEqual(true, room.Players.Contains(player));
     }
@@ -30,10 +31,11 @@ namespace GameLobbyTest
     public void CanCrateRoomAndAddTwoPlayers()
     {
       var player1 = new Player("Ioan");
-      IRoom room = CreateRoom(player1, 10);
+      IRoom room = CreateRoom(10);
+      _lobby.Connect(player1, room);
       
       var player2 = new Player("Gilbert");
-      _rooms.Connect(player2, room);
+      _lobby.Connect(player2, room);
       
       Assert.AreEqual(true, room.Players.Contains(player2));
     }
@@ -42,27 +44,38 @@ namespace GameLobbyTest
     public void AddingPlayerInRoomTwiceTrowsException()
     {
       var player = new Player("Ioan");
-      IRoom room = CreateRoom(player, 10);
+      IRoom room = CreateRoom(10);
+      _lobby.Connect(player, room);
       
-      Assert.Throws<InvalidOperationException>(() => _rooms.Connect(player, room));
+      Assert.Throws<InvalidOperationException>(() => _lobby.Connect(player, room));
     }
     
     [Test]
     public void MakingPlayerAsReadyIncreasedReadyCountInRoom()
     {
       var player = new Player("Ioan");
-      IRoom room = CreateRoom(player, 10);
+      IRoom room = CreateRoom(10);
+      _lobby.Connect(player, room);
       room.MakeReady(player);
       
       Assert.AreEqual(1, room.ReadyPlayersCount);
     }
     
-
-    private IRoom CreateRoom(Player player, int maxPlayers)
+    [Test]
+    public void MakingPlayerWitchAbsentInRoomAsReadyTrowsException()
     {
-      IRoom room = _rooms.CreateRoomAndConnect(player, maxPlayers);
+      var player = new Player("Ioan");
+      IRoom room = CreateRoom(10);
+
+      Assert.Throws<InvalidOperationException>(() => room.MakeReady(player));
+    }
+    
+    private IRoom CreateRoom(int maxPlayers)
+    {
+      IRoom room = _lobby.CreateRoom(maxPlayers);
       return room;
     }
+
 
   }
 }

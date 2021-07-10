@@ -4,27 +4,22 @@ using System.Linq;
 
 namespace Source
 {
-  public class Rooms
+  public class Lobby
   {
     private List<Room> _rooms = new List<Room>();
     private int _roomsCreated;
 
-    public IRoom CreateRoomAndConnect(Player player, int maxPlayers)
+    public IRoom CreateRoom(int maxPlayers)
     {
-      player = player ?? throw new NullReferenceException(nameof(player));
-
       if (maxPlayers <= 0)
         throw new ArgumentOutOfRangeException(nameof(maxPlayers));
 
-      Room room = CrateRoom(maxPlayers);
-      Connect(player, room);
-
-      return room;
+      return CrateRoom(maxPlayers);
     }
 
-    public IReadOnlyList<IRoom> All => _rooms;
+    public IReadOnlyList<IRoom> Rooms => _rooms;
 
-    public void Connect(Player player, IRoom room)
+    public IConnection Connect(Player player, IRoom room)
     {
       player = player ?? throw new NullReferenceException(nameof(player));
       room = room ?? throw new NullReferenceException(nameof(room));
@@ -35,7 +30,7 @@ namespace Source
       Room targetRoom = _rooms.FirstOrDefault(x => x == room)
                         ?? throw new InvalidOperationException("room is not exist");
 
-      targetRoom.Add(player);
+      return targetRoom.Add(player);
     }
 
     private Room CrateRoom(int maxPlayers)
@@ -59,6 +54,12 @@ namespace Source
       {
         MaxPlayers = maxPlayers;
         _roomId = roomId;
+        _chat.MessageRecived += Inform;
+      }
+
+      private void Inform(Message obj)
+      {
+        throw new NotImplementedException();
       }
 
       public int MaxPlayers { get; }
@@ -67,11 +68,14 @@ namespace Source
 
       public int ReadyPlayersCount => _connection.Count(x => x.IsPlayerReady);
 
-      public void Add(Player player)
+      public IConnection Add(Player player)
       {
         player = player ?? throw new NullReferenceException();
 
-        _connection.Add(new Connection(player));
+        var connection = new Connection(player, this);
+        _connection.Add(connection);
+
+        return connection;
       }
 
       public void MakeReady(Player player)
@@ -91,9 +95,7 @@ namespace Source
 
       public void SendMessage(Player sender, string message) =>
         _chat.Write(sender.Name, message);
-
-      public string GetAllMessages(Player reader) =>
-        _chat.Messages.Aggregate((x, accum) => accum += x + "\n");
+      
     }
 
   }
