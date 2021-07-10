@@ -10,6 +10,7 @@ namespace Source
       Room = room;
     }
 
+    public event Action<Message> MessageReceived;
     public Player Player { get; }
     public IRoom Room { get; }
     public bool IsPlayerReady { get; private set; }
@@ -21,6 +22,9 @@ namespace Source
 
       IsPlayerReady = true;
     }
+
+    public void ReceiveMessage(Message message) =>
+      MessageReceived?.Invoke(message);
 
   }
 }

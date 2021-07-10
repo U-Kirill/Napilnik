@@ -21,46 +21,43 @@ namespace GameLobbyTest
     public void CanCrateRoomAndPlayerWillHere()
     {
       var player = new Player("Ioan");
-      IRoom room = CreateRoom(10);
-      _lobby.Connect(player, room);
+      IConnection connection = CreateRoomAndConnect(player, 10);
 
-      Assert.AreEqual(true, room.Players.Contains(player));
+
+      Assert.AreEqual(true, connection.Room.Connections.Any(x =>  x.Player == player));
     }
 
     [Test]
     public void CanCrateRoomAndAddTwoPlayers()
     {
       var player1 = new Player("Ioan");
-      IRoom room = CreateRoom(10);
-      _lobby.Connect(player1, room);
+      IConnection connection = CreateRoomAndConnect(player1, 10);
       
       var player2 = new Player("Gilbert");
-      _lobby.Connect(player2, room);
+      _lobby.Connect(player2, connection.Room);
       
-      Assert.AreEqual(true, room.Players.Contains(player2));
+      Assert.AreEqual(true, connection.Room.Connections.Any(x =>  x.Player == player2));
     }
-    
+
     [Test]
     public void AddingPlayerInRoomTwiceTrowsException()
     {
       var player = new Player("Ioan");
-      IRoom room = CreateRoom(10);
-      _lobby.Connect(player, room);
+      IConnection connection = CreateRoomAndConnect(player, 10);
       
-      Assert.Throws<InvalidOperationException>(() => _lobby.Connect(player, room));
+      Assert.Throws<InvalidOperationException>(() => _lobby.Connect(player, connection.Room));
     }
-    
+
     [Test]
     public void MakingPlayerAsReadyIncreasedReadyCountInRoom()
     {
       var player = new Player("Ioan");
-      IRoom room = CreateRoom(10);
-      _lobby.Connect(player, room);
-      room.MakeReady(player);
+      IConnection connection = CreateRoomAndConnect(player, 10);
+      connection.Room.MakeReady(player);
       
-      Assert.AreEqual(1, room.ReadyPlayersCount);
+      Assert.AreEqual(1, connection.Room.Connections.Count(x => x.IsPlayerReady));
     }
-    
+
     [Test]
     public void MakingPlayerWitchAbsentInRoomAsReadyTrowsException()
     {
@@ -70,12 +67,62 @@ namespace GameLobbyTest
       Assert.Throws<InvalidOperationException>(() => room.MakeReady(player));
     }
     
+    [Test]
+    public void CanReadSentMessage()
+    {
+      var player = new Player("Ioan");
+      IConnection connection = CreateRoomAndConnect(player, 10);
+      
+      var sentText = "Hello Room!";
+      Message receivedMessage = SendAndReceiveMessage(connection, sentText);
+
+      Assert.AreEqual(sentText, receivedMessage.Text);
+    }
+
+    [Test]
+    public void AreEqualSenderAndSenderInReceivedMessage()
+    {
+      var player = new Player("Ioan");
+      IConnection connection = CreateRoomAndConnect(player, 10);
+
+      var sentText = "Hello Room!";
+      Message receivedMessage = SendAndReceiveMessage(connection, sentText);
+
+      Assert.AreEqual(player, receivedMessage.Sender);
+    }
+
+    [Test]
+    public void IfReachNesseseryReadyPlayersCountRoomeGoesToGameState()
+    {
+      var player = new Player("Ioan");
+      IConnection connection = CreateRoomAndConnect(player, 10);
+
+      var sentText = "Hello Room!";
+      Message receivedMessage = SendAndReceiveMessage(connection, sentText);
+
+      Assert.AreEqual(player, receivedMessage.Sender);
+    }
+    
+    private Message SendAndReceiveMessage(IConnection connection, string text)
+    {
+      Message recivedMessage = null;
+      connection.MessageReceived += message => recivedMessage = message;
+
+      connection.Room.SendMessage(connection.Player, text);
+      return recivedMessage;
+    }
+
+    private IConnection CreateRoomAndConnect(Player player, int maxPlayers)
+    {
+      IRoom room = CreateRoom(maxPlayers);
+      IConnection connection = _lobby.Connect(player, room);
+      return connection;
+    }
+
     private IRoom CreateRoom(int maxPlayers)
     {
       IRoom room = _lobby.CreateRoom(maxPlayers);
       return room;
     }
-
-
   }
 }

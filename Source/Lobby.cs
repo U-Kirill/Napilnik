@@ -24,13 +24,13 @@ namespace Source
       player = player ?? throw new NullReferenceException(nameof(player));
       room = room ?? throw new NullReferenceException(nameof(room));
 
-      if (_rooms.Exists(room => room.Players.Contains(player)))
+      if (IsRoomExistPlayer(player))
         throw new InvalidOperationException("One of the rooms already contain this player");
-      
+
       Room targetRoom = _rooms.FirstOrDefault(x => x == room)
                         ?? throw new InvalidOperationException("room is not exist");
 
-      return targetRoom.Add(player);
+      return targetRoom.Connect(player);
     }
 
     private Room CrateRoom(int maxPlayers)
@@ -40,40 +40,41 @@ namespace Source
       return room;
     }
 
+    private bool IsRoomExistPlayer(Player player) => 
+      _rooms.Exists(room => room.Connections.Any(x => x.Player == player));
+
     private int GetNextRoomId() =>
       _roomsCreated++;
 
     private class Room : IRoom
     {
-
       private readonly int _roomId;
-      private readonly List<Connection> _connection = new List<Connection>();
-      private Chat _chat = new Chat();
+      private readonly List<Connection> _connections = new List<Connection>();
+      private readonly Chat _chat = new Chat();
+      
+      private State _state;
 
       public Room(int roomId, int maxPlayers)
       {
         MaxPlayers = maxPlayers;
         _roomId = roomId;
         _chat.MessageRecived += Inform;
-      }
 
-      private void Inform(Message obj)
-      {
-        throw new NotImplementedException();
+        _state = new WaitPlayerState(this);
       }
 
       public int MaxPlayers { get; }
 
-      public IEnumerable<Player> Players => _connection.Select(x => x.Player);
+      private int ReadyPlayersCount => _connections.Count(x => x.IsPlayerReady);
 
-      public int ReadyPlayersCount => _connection.Count(x => x.IsPlayerReady);
+      public IReadOnlyList<IPlayerConnection> Connections => _connections;
 
-      public IConnection Add(Player player)
+      public IConnection Connect(Player player)
       {
         player = player ?? throw new NullReferenceException();
 
         var connection = new Connection(player, this);
-        _connection.Add(connection);
+        _connections.Add(connection);
 
         return connection;
       }
@@ -82,21 +83,69 @@ namespace Source
       {
         player = player ?? throw new NullReferenceException(nameof(player));
 
-        Connection connectionWithPlayer = _connection
+        Connection connectionWithPlayer = _connections
           .FirstOrDefault(x => x.Player == player);
 
         if (connectionWithPlayer == null)
           throw new InvalidOperationException("Can't make ready player which not exist in this room");
+
+        if (ReadyPlayersCount >= MaxPlayers)
+          throw new InvalidOperationException("Reached Max Ready Players count");
         
         connectionWithPlayer.MakeReady(player);
+
+        if (CanStartGame())
+          StartGame();
       }
+
+      private void StartGame() => 
+        _state = new GameState(this);
+
+      private bool CanStartGame() => 
+        ReadyPlayersCount == MaxPlayers;
+
 
       // при смене состояния изменять стейт подборщика коннектов. И результат кидать в исключенте
 
       public void SendMessage(Player sender, string message) =>
-        _chat.Write(sender.Name, message);
-      
-    }
+        _chat.Write(sender, message);
 
+      private void Inform(Message message)
+      {
+        foreach (Connection connectio in _state.ActiveConnection)
+          connectio.ReceiveMessage(message);
+      }
+
+      private abstract class State
+      {
+        public State(Room room)
+        {
+          Room = room;
+        }
+
+        public abstract IReadOnlyList<Connection> ActiveConnection { get; }
+
+        protected Room Room { get; }
+
+      }
+
+      private class WaitPlayerState : State
+      {
+        public WaitPlayerState(Room room)
+            : base(room) { }
+
+        public override IReadOnlyList<Connection> ActiveConnection => Room._connections;
+      }
+
+      private class GameState : State
+      {
+        public GameState(Room room)
+          : base(room) { }
+
+        public override IReadOnlyList<Connection> ActiveConnection =>
+          Room._connections.Where(x => x.IsPlayerReady).ToList();
+      }
+
+    }
   }
 }

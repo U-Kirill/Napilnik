@@ -6,8 +6,7 @@ namespace Source
   {
     void MakeReady(Player player);
     void SendMessage(Player sender, string message);
-    IEnumerable<Player> Players { get; }
-    int ReadyPlayersCount { get; }
+    IReadOnlyList<IPlayerConnection> Connections { get; }
     int MaxPlayers { get; }
 
   }

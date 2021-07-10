@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Source;
 
 internal class Chat
 {
@@ -8,9 +9,9 @@ internal class Chat
 
   public event Action<Message> MessageRecived;
   
-  public void Write(string senderName, string text)
+  public void Write(Player sender, string text)
   {
-    var message = new Message(senderName, text);
+    var message = new Message(sender, text);
     _messages.Add(message);
 
     MessageRecived?.Invoke(message);

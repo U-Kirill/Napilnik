@@ -1,14 +1,14 @@
 ﻿using System;
+using Source;
 
 public class Message
 {
-  public string Sender { get; }
+  public Player Sender { get; }
   public string Text { get; }
 
-  public Message(string sender, string text)
+  public Message(Player sender, string text)
   {
-    if (!IsValidString(sender))
-      throw new InvalidOperationException($"argument {nameof(sender)} is not valid");
+    sender = sender ?? throw new NullReferenceException(nameof(sender));
     
     if (!IsValidString(text))
       throw new InvalidOperationException($"argument {nameof(text)} is empty or white space");
