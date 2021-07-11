@@ -6,6 +6,5 @@ namespace Source
   {
     IReadOnlyList<IPlayerConnection> Connections { get; }
     int MaxPlayers { get; }
-
   }
 }

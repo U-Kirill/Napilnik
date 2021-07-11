@@ -6,6 +6,9 @@ namespace Source
   {
     public Connection(Player player, IRoom room)
     {
+      player = player ?? throw new NullReferenceException(nameof(player));
+      room = room ?? throw new NullReferenceException(nameof(room));
+      
       Player = player;
       Room = room;
     }
@@ -18,13 +21,16 @@ namespace Source
     public void MakeReady(Player player)
     {
       if (player != Player)
-        throw new InvalidOperationException();
+        throw new InvalidOperationException("Player in connection not equals");
 
       IsPlayerReady = true;
     }
 
-    public void ReceiveMessage(Message message) =>
+    public void ReceiveMessage(Message message)
+    {
+      message = message ?? throw new NullReferenceException(nameof(message));
+      
       MessageReceived?.Invoke(message);
-
+    }
   }
 }

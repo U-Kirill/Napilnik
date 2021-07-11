@@ -4,7 +4,6 @@ using Source;
 
 internal class Chat
 {
-
   private readonly  List<Message> _messages = new List<Message>();
 
   public event Action<Message> MessageRecived;
@@ -16,7 +15,4 @@ internal class Chat
 
     MessageRecived?.Invoke(message);
   }
-
-  public IReadOnlyList<Message> Messages => _messages;
-
 }

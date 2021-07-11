@@ -14,7 +14,10 @@ namespace Source
       if (maxPlayers <= 0)
         throw new ArgumentOutOfRangeException(nameof(maxPlayers));
 
-      return CrateRoom(maxPlayers);
+      var room = new Room(GetNextRoomId(), maxPlayers);
+      _rooms.Add(room);
+      
+      return room;
     }
 
     public IReadOnlyList<IRoom> Rooms => _rooms;
@@ -33,14 +36,7 @@ namespace Source
       return targetRoom.Connect(player);
     }
 
-    private Room CrateRoom(int maxPlayers)
-    {
-      var room = new Room(GetNextRoomId(), maxPlayers);
-      _rooms.Add(room);
-      return room;
-    }
-
-    private bool IsRoomExistPlayer(Player player) => 
+    private bool IsRoomExistPlayer(Player player) =>
       _rooms.Exists(room => room.Connections.Any(x => x.Player == player));
 
     private int GetNextRoomId() =>
@@ -51,14 +47,14 @@ namespace Source
       private readonly int _roomId;
       private readonly List<Connection> _connections = new List<Connection>();
       private readonly Chat _chat = new Chat();
-      
+
       private State _state;
 
       public Room(int roomId, int maxPlayers)
       {
         MaxPlayers = maxPlayers;
         _roomId = roomId;
-        _chat.MessageRecived += Inform;
+        _chat.MessageRecived += InformActivePlayers;
 
         _state = new WaitPlayerState(this);
       }
@@ -115,10 +111,10 @@ namespace Source
       public bool IsActivePlayer(Player sender) =>
         _state.ActiveConnection.Any(x => x.Player == sender);
 
-      private void Inform(Message message)
+      private void InformActivePlayers(Message message)
       {
-        foreach (Connection connectio in _state.ActiveConnection)
-          connectio.ReceiveMessage(message);
+        foreach (Connection connection in _state.ActiveConnection)
+          connection.ReceiveMessage(message);
       }
       
       private void StartGame() => 
