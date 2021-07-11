@@ -5,7 +5,7 @@ using Source;
 
 namespace GameLobbyTest
 {
-  public class Tests
+  public class CommonTests
   {
 
     private Lobby _lobby;

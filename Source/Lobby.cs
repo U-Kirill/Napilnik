@@ -65,13 +65,17 @@ namespace Source
 
       public int MaxPlayers { get; }
       public IReadOnlyList<IPlayerConnection> Connections => _connections;
-
+      
+      private bool HasFreeSlots => ReadyPlayersCount < MaxPlayers;
       private int ReadyPlayersCount => _connections.Count(x => x.IsPlayerReady);
 
       public IConnection Connect(Player player)
       {
         player = player ?? throw new NullReferenceException();
 
+        if (!HasFreeSlots)
+          throw new InvalidOperationException("Reached Max Ready Players count");
+        
         var connection = new Connection(player, this);
         _connections.Add(connection);
 
@@ -85,7 +89,7 @@ namespace Source
         if (!IsActivePlayer(player))
           throw new InvalidOperationException("Player is not active");
 
-        if (ReadyPlayersCount >= MaxPlayers)
+        if (!HasFreeSlots)
           throw new InvalidOperationException("Reached Max Ready Players count");
         
         Connection connectionWithPlayer = _connections
