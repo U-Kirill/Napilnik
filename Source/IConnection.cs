@@ -6,6 +6,5 @@ namespace Source
   {
     event Action<Message> MessageReceived;
     IRoom Room { get; }
-
   }
 }

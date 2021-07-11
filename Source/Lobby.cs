@@ -6,7 +6,8 @@ namespace Source
 {
   public class Lobby
   {
-    private List<Room> _rooms = new List<Room>();
+    private readonly List<Room> _rooms = new List<Room>();
+    
     private int _roomsCreated;
 
     public IRoom CreateRoom(int maxPlayers)
@@ -27,16 +28,16 @@ namespace Source
       player = player ?? throw new NullReferenceException(nameof(player));
       room = room ?? throw new NullReferenceException(nameof(room));
 
-      if (IsRoomExistPlayer(player))
+      if (IsPlayerExistInRooms(player))
         throw new InvalidOperationException("One of the rooms already contain this player");
 
       Room targetRoom = _rooms.FirstOrDefault(x => x == room)
-                        ?? throw new InvalidOperationException("room is not exist");
+                        ?? throw new InvalidOperationException("room is not exist in this lobby");
 
       return targetRoom.Connect(player);
     }
 
-    private bool IsRoomExistPlayer(Player player) =>
+    private bool IsPlayerExistInRooms(Player player) =>
       _rooms.Exists(room => room.Connections.Any(x => x.Player == player));
 
     private int GetNextRoomId() =>
@@ -44,33 +45,36 @@ namespace Source
 
     private class Room : IRoom
     {
-      private readonly int _roomId;
       private readonly List<Connection> _connections = new List<Connection>();
       private readonly Chat _chat = new Chat();
 
       private State _state;
 
-      public Room(int roomId, int maxPlayers)
+      public Room(int id, int maxPlayers)
       {
         MaxPlayers = maxPlayers;
-        _roomId = roomId;
-        _chat.MessageRecived += InformActivePlayers;
+        Id = id;
+        _chat.MessageRecived += InformActiveConnections;
 
         _state = new WaitPlayerState(this);
       }
-
+      
+      public int Id { get; }
+      
       public int MaxPlayers { get; }
+      
       public IReadOnlyList<IPlayerConnection> Connections => _connections;
       
-      private bool HasFreeSlots => ReadyPlayersCount < MaxPlayers;
-      private int ReadyPlayersCount => _connections.Count(x => x.IsPlayerReady);
+      private bool HasFreeSlots => ReadyPlayers.Count() < MaxPlayers;
+      
+      private IEnumerable<Connection> ReadyPlayers => _connections.Where(x => x.IsPlayerReady);
 
       public IConnection Connect(Player player)
       {
         player = player ?? throw new NullReferenceException();
 
         if (!HasFreeSlots)
-          throw new InvalidOperationException("Reached Max Ready Players count");
+          throw new InvalidOperationException("Reached max ready players count");
         
         var connection = new Connection(player, this);
         _connections.Add(connection);
@@ -86,10 +90,10 @@ namespace Source
           throw new InvalidOperationException("Player is not active");
 
         if (!HasFreeSlots)
-          throw new InvalidOperationException("Reached Max Ready Players count");
+          throw new InvalidOperationException("Reached max ready players count");
         
-        Connection connectionWithPlayer = _connections
-          .FirstOrDefault(x => x.Player == player);
+        Connection connectionWithPlayer = 
+          _connections.FirstOrDefault(x => x.Player == player);
         
         if(connectionWithPlayer.IsPlayerReady)
           throw new InvalidOperationException("Player already ready");
@@ -111,17 +115,20 @@ namespace Source
       public bool IsActivePlayer(Player sender) =>
         _state.ActiveConnection.Any(x => x.Player == sender);
 
-      private void InformActivePlayers(Message message)
+      private void InformActiveConnections(Message message)
       {
         foreach (Connection connection in _state.ActiveConnection)
-          connection.ReceiveMessage(message);
+          InformConnection(connection, message);
       }
-      
+
+      private void InformConnection(Connection connection, Message message) =>
+        connection.ReceiveMessage(message);
+
       private void StartGame() => 
         _state = new GameState(this);
 
       private bool CanStartGame() => 
-        ReadyPlayersCount == MaxPlayers;
+        ReadyPlayers.Count() == MaxPlayers;
       
       private abstract class State
       {

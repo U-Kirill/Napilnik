@@ -15,6 +15,7 @@ public class Message
   }
 
   public string Text { get; }
+  
   public Player Sender { get; }
 
   private bool IsValidString(string value) => 

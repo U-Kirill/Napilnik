@@ -14,8 +14,11 @@ namespace Source
     }
 
     public event Action<Message> MessageReceived;
+    
     public Player Player { get; }
+    
     public IRoom Room { get; }
+    
     public bool IsPlayerReady { get; private set; }
 
     public void MakeReady(Player player)
