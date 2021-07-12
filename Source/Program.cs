@@ -10,7 +10,7 @@ namespace Source
       Pathfinder fileLogPathfinder = new Pathfinder(new FileLogger());
       Pathfinder conditionalFileLogPathfinder = new Pathfinder(new ConditionalLogger(new FileLogger(), new DayOfWeekCondition(DayOfWeek.Friday)));
       Pathfinder conditionalConsoleLogPathfinder = new Pathfinder(new ConditionalLogger(new ConsoleLogger(), new DayOfWeekCondition(DayOfWeek.Friday)));
-      Pathfinder multiplyConsoleLogPathfinder = new Pathfinder(new MultyplyLogger(new ConsoleLogger(), new ConditionalLogger(new FileLogger(), new DayOfWeekCondition(DayOfWeek.Friday))));
+      Pathfinder multiplyConsoleLogPathfinder = new Pathfinder(new MultiplyLogger(new ConsoleLogger(), new ConditionalLogger(new FileLogger(), new DayOfWeekCondition(DayOfWeek.Friday))));
     }
   }
 }
