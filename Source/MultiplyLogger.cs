@@ -1,10 +1,10 @@
 ﻿namespace Source
 {
-  public class MultyplyLogger : ILogger
+  public class MultiplyLogger : ILogger
   {
     private readonly ILogger[] _loggers;
 
-    public MultyplyLogger(params ILogger[] loggers)
+    public MultiplyLogger(params ILogger[] loggers)
     {
       _loggers = loggers;
     }
