@@ -1,18 +1,27 @@
 ﻿namespace Source
 {
-  public class Player
+  internal class Player
   {
-    public Player(string name, int coins, int army)
+    private Weapon _weapon;
+    private Movement _movement;
+
+    public Player(Weapon weapon, Movement movement)
     {
-      Name = name;
-      Coins = coins;
-      Army = army;
+      _weapon = weapon;
+      _movement = movement;
     }
 
     public string Name { get; }
 
-    public int Coins { get; }
+    public int Age { get; }
 
-    public int Army { get; }
+    public void Move() =>
+      _movement.Move();
+
+    public void Attack()
+    {
+      if (!_weapon.IsReloading())
+        _weapon.Shoot();
+    }
   }
 }
