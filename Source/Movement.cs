@@ -4,20 +4,17 @@ namespace Source
 {
   internal class Movement
   {
-    public Movement(float directionHorizontal, float directionVertical, float speed)
+    private readonly Direction _direction;
+
+    public Movement(Direction direction, float speed)
     {
-      DirectionHorizontal = directionHorizontal;
-      DirectionVertical = directionVertical;
+      _direction = direction;
       Speed = speed;
     }
-
-    public float DirectionHorizontal { get; }
-
-    public float DirectionVertical { get; }
-
+    
     public float Speed { get; }
 
-    public void Move() => 
+    public void Move() =>
       throw new NotImplementedException();
 
   }
