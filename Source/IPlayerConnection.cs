@@ -1,8 +1,8 @@
 ﻿namespace Source
 {
-  public interface IPlayerConnection
-  {
-    Player Player { get; }
-    bool IsPlayerReady { get; }
-  }
+    public interface IPlayerConnection
+    {
+        Player Player { get; }
+        bool IsPlayerReady { get; }
+    }
 }

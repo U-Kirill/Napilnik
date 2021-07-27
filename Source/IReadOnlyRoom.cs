@@ -2,10 +2,10 @@
 
 namespace Source
 {
-  public interface IReadOnlyRoom
-  {
-    IReadOnlyList<IPlayerConnection> Connections { get; }
-    int MaxPlayers { get; }
-    int Id { get; }
-  }
+    public interface IReadOnlyRoom
+    {
+        IReadOnlyList<IPlayerConnection> Connections { get; }
+        int MaxPlayers { get; }
+        int Id { get; }
+    }
 }

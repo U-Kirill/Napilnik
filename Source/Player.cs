@@ -1,12 +1,12 @@
 ﻿namespace Source
 {
-  public class Player
-  {
-    public Player(string name)
+    public class Player
     {
-      Name = name;
-    }
+        public Player(string name)
+        {
+            Name = name;
+        }
 
-    public string Name { get; }
-  }
+        public string Name { get; }
+    }
 }

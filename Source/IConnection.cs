@@ -2,9 +2,9 @@
 
 namespace Source
 {
-  public interface IConnection : IPlayerConnection
-  {
-    event Action<Message> MessageReceived;
-    IRoom Room { get; }
-  }
+    public interface IConnection : IPlayerConnection
+    {
+        event Action<Message> MessageReceived;
+        IRoom Room { get; }
+    }
 }
