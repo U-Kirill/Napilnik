@@ -16,7 +16,7 @@ namespace IMJunior
 
             IPaymentService paymentService = paymentServiceStorage.Get(systemId);
             
-            paymentService.BeginPayment();
+            paymentService.BeginPayment(paymentHandler);
             
             //if (systemId == "QIWI")
             //    Console.WriteLine("Перевод на страницу QIWI...");
@@ -38,29 +38,49 @@ namespace IMJunior
     {
         public string SystemId => "Card";
         public string Status { get; }
-        public void BeginPayment()
+        public void BeginPayment(PaymentHandler paymentHandler)
         {
             Console.WriteLine("Вызов API банка эмитера карты Card...");
+            paymentHandler.ShowPaymentResult(this);
         }
     }
 
     internal class WebMoneyPaymentService : IPaymentService
     {
         public string SystemId => "WebMoney";
-        public string Status { get; }
-        public void BeginPayment()
+        public string Status { get; private set; }
+        public void BeginPayment(PaymentHandler paymentHandler)
         {
             Console.WriteLine("Вызов API WebMoney...");
+            Status = "Проверка платежа через Web Money...";
+            paymentHandler.ShowPaymentResult(this);
         }
     }
 
+    public abstract class PaymentService
+    {
+        public void BeginPayment(PaymentHandler paymentHandler)
+        {
+            ShowPaymentInterface();
+            ProcessPayment(() => ShowResult(paymentHandler));
+        }
+
+        protected abstract void ProcessPayment(Action onComplete);
+
+        protected abstract void ShowPaymentInterface();
+        
+        protected abstract void ShowResult(PaymentHandler paymentHandler);
+    }
+    
     internal class QiwiPaymentService : IPaymentService
     {
         public string SystemId => "QIWI";
-        public string Status { get; }
-        public void BeginPayment()
+        public string Status { get; private set; }
+        public void BeginPayment(PaymentHandler paymentHandler)
         {
             Console.WriteLine("Перевод на страницу QIWI...");
+            Status = "Проверка платежа через QIWI...";
+            paymentHandler.ShowPaymentResult(this);
         }
     }
 
@@ -108,11 +128,11 @@ namespace IMJunior
 
     public class PaymentHandler
     {
-        public void ShowPaymentResult(IPaymentService systemId)
+        public void ShowPaymentResult(IPaymentService service)
         {
-            Console.WriteLine($"Вы оплатили с помощью {systemId.SystemId}");
+            Console.WriteLine($"Вы оплатили с помощью {service.SystemId}");
 
-            Console.WriteLine(systemId.Status);
+            Console.WriteLine(service.Status);
             //if (systemId == "QIWI")
             //    Console.WriteLine("Проверка платежа через QIWI...");
             //else if (systemId == "WebMoney")
@@ -128,6 +148,6 @@ namespace IMJunior
     {
        string SystemId { get; }
        string Status { get; }
-       void BeginPayment();
+       void BeginPayment(PaymentHandler paymentHandler);
     }
 }
