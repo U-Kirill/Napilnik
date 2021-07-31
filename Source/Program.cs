@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading;
 
 namespace IMJunior
 {
@@ -34,52 +36,92 @@ namespace IMJunior
         }
     }
 
-    internal class CardPaymentService : IPaymentService
-    {
-        public string SystemId => "Card";
-        public string Status { get; }
-        public void BeginPayment(PaymentHandler paymentHandler)
-        {
-            Console.WriteLine("Вызов API банка эмитера карты Card...");
-            paymentHandler.ShowPaymentResult(this);
-        }
-    }
-
-    internal class WebMoneyPaymentService : IPaymentService
-    {
-        public string SystemId => "WebMoney";
-        public string Status { get; private set; }
-        public void BeginPayment(PaymentHandler paymentHandler)
-        {
-            Console.WriteLine("Вызов API WebMoney...");
-            Status = "Проверка платежа через Web Money...";
-            paymentHandler.ShowPaymentResult(this);
-        }
-    }
-
     public abstract class PaymentService
     {
         public void BeginPayment(PaymentHandler paymentHandler)
         {
-            ShowPaymentInterface();
-            ProcessPayment(() => ShowResult(paymentHandler));
+            ShowPaymentInterface(OnConfirmPayment);
+
+            void OnConfirmPayment() => ProcessPayment(OnPaymentComplete);
+            void OnPaymentComplete() => ShowResult(paymentHandler);
         }
+
+        protected abstract void ShowPaymentInterface(Action onConfirmPayment);
 
         protected abstract void ProcessPayment(Action onComplete);
 
-        protected abstract void ShowPaymentInterface();
-        
         protected abstract void ShowResult(PaymentHandler paymentHandler);
     }
-    
-    internal class QiwiPaymentService : IPaymentService
+
+    internal class CardPaymentService : PaymentService, IPaymentService
+    {
+        public string SystemId => "Card";
+        
+        public string Status { get; private set; }
+
+        protected override void ShowPaymentInterface(Action onConfirmPayment)
+        {
+            Console.WriteLine("Вызов API банка эмитера карты Card...");
+            onConfirmPayment();
+        }
+
+        protected override void ProcessPayment(Action onComplete)
+        {
+            Status = "Проверка платежа через Card...";
+            Thread.Sleep(5000);
+            onComplete();
+        }
+
+        protected override void ShowResult(PaymentHandler paymentHandler)
+        {
+            paymentHandler.ShowPaymentResult(this);
+        }
+    }
+
+    internal class WebMoneyPaymentService : PaymentService, IPaymentService
+    {
+        public string SystemId => "WebMoney";
+        public string Status { get; private set; }
+        
+        protected override void ShowPaymentInterface(Action onConfirmPayment)
+        {
+            Console.WriteLine("Вызов API WebMoney...");
+            onConfirmPayment();
+        }
+
+        protected override void ProcessPayment(Action onComplete)
+        {
+            Status = "Проверка платежа через Web Money...";
+            Thread.Sleep(5000);
+            onComplete();
+        }
+
+        protected override void ShowResult(PaymentHandler paymentHandler)
+        {
+            paymentHandler.ShowPaymentResult(this);
+        }
+    }
+
+    internal class QiwiPaymentService : PaymentService, IPaymentService
     {
         public string SystemId => "QIWI";
         public string Status { get; private set; }
-        public void BeginPayment(PaymentHandler paymentHandler)
+
+        protected override void ShowPaymentInterface(Action onConfirmPayment)
         {
-            Console.WriteLine("Перевод на страницу QIWI...");
+            Console.WriteLine("еревод на страницу QIWI...");
+            onConfirmPayment();
+        }
+
+        protected override void ProcessPayment(Action onComplete)
+        {
             Status = "Проверка платежа через QIWI...";
+            Thread.Sleep(5000);
+            onComplete();
+        }
+
+        protected override void ShowResult(PaymentHandler paymentHandler)
+        {
             paymentHandler.ShowPaymentResult(this);
         }
     }
