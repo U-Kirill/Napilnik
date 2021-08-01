@@ -4,36 +4,25 @@ using System.Threading.Tasks;
 
 namespace IMJunior
 {
-    public class QiwiPaymentService : PaymentService, IPaymentService
+    public class QiwiPaymentService : IPaymentService
     {
+        private readonly PaymentHandler _paymentHandler;
+
+        public QiwiPaymentService(PaymentHandler paymentHandler)
+        {
+            _paymentHandler = paymentHandler;
+        }
+
         public string SystemId => "QIWI";
 
-        public string Status { get; private set; }
-
-        protected override void ShowPaymentInterface(Action onPaymentConfirmed)
+        public void BeginPayment(PaymentHandler paymentHandler)
         {
             Console.WriteLine("Перевод на страницу QIWI...");
-
-            Status = $"Вы оплатили с помощью {SystemId}";
-
-            onPaymentConfirmed();
         }
 
-        protected override async void ProcessPayment(Action onCompleted)
+        public Result<IPaymentResultReason> IsCorrectPayment()
         {
-            Status = "Проверка платежа через QIWI...";
-            await Task.Run(() => Thread.Sleep(5000));
-            onCompleted();
-        }
-
-        protected override void ShowStatus(PaymentHandler paymentHandler)
-        {
-            paymentHandler.ShowStatus(this);
-        }
-
-        protected override void ShowResult(PaymentHandler paymentHandler)
-        {
-            paymentHandler.ShowPaymentResult(this);
+            return Result<IPaymentResultReason>.CreateSuccessful(new AllCorrect());
         }
     }
 }

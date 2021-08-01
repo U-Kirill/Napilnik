@@ -3,36 +3,25 @@ using System.Threading;
 
 namespace IMJunior
 {
-    public class CardPaymentService : PaymentService, IPaymentService
+    public class CardPaymentService : IPaymentService
     {
+        private readonly PaymentHandler _paymentHandler;
+
+        public CardPaymentService(PaymentHandler paymentHandler)
+        {
+            _paymentHandler = paymentHandler;
+        }
+
         public string SystemId => "Card";
 
-        public string Status { get; private set; }
-
-        protected override void ShowPaymentInterface(Action onPaymentConfirmed)
+        public void BeginPayment(PaymentHandler paymentHandler)
         {
             Console.WriteLine("Вызов API банка эмитера карты Card...");
-            
-            Status = $"Вы оплатили с помощью {SystemId}";
-            
-            onPaymentConfirmed();
         }
 
-        protected override void ProcessPayment(Action onCompleted)
+        public Result<IPaymentResultReason> IsCorrectPayment()
         {
-            Status = "Проверка платежа через Card...";
-            Thread.Sleep(5000);
-            onCompleted();
-        }
-
-        protected override void ShowStatus(PaymentHandler paymentHandler)
-        {
-            paymentHandler.ShowStatus(this);
-        }
-
-        protected override void ShowResult(PaymentHandler paymentHandler)
-        {
-            paymentHandler.ShowPaymentResult(this);
+            return Result<IPaymentResultReason>.CreateSuccessful(new AllCorrect());
         }
     }
 }

@@ -3,36 +3,25 @@ using System.Threading;
 
 namespace IMJunior
 {
-    public class WebMoneyPaymentService : PaymentService, IPaymentService
+    public class WebMoneyPaymentService : IPaymentService
     {
+        private readonly PaymentHandler _paymentHandler;
+
+        public WebMoneyPaymentService(PaymentHandler paymentHandler)
+        {
+            _paymentHandler = paymentHandler;
+        }
+
         public string SystemId => "WebMoney";
 
-        public string Status { get; private set; }
-
-        protected override void ShowPaymentInterface(Action onPaymentConfirmed)
+        public void BeginPayment(PaymentHandler paymentHandler)
         {
             Console.WriteLine("Вызов API WebMoney...");
-
-            Status = $"Вы оплатили с помощью {SystemId}";
-
-            onPaymentConfirmed();
         }
 
-        protected override void ProcessPayment(Action onCompleted)
+        public Result<IPaymentResultReason> IsCorrectPayment()
         {
-            Status = "Проверка платежа через Web Money...";
-            Thread.Sleep(5000);
-            onCompleted();
-        }
-
-        protected override void ShowStatus(PaymentHandler paymentHandler)
-        {
-            paymentHandler.ShowStatus(this);
-        }
-
-        protected override void ShowResult(PaymentHandler paymentHandler)
-        {
-            paymentHandler.ShowPaymentResult(this);
+            return Result<IPaymentResultReason>.CreateSuccessful(new AllCorrect());
         }
     }
 }
