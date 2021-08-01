@@ -8,6 +8,10 @@
             Reson = reason;
         }
 
+        public bool IsSuccess { get; }
+
+        public T Reson { get; }
+
         public static implicit operator bool(Result<T> result) =>
             result.IsSuccess;
 
@@ -16,9 +20,5 @@
 
         public static Result<T> CreateFailed(T reason) =>
             new Result<T>(false, reason);
-
-        public bool IsSuccess { get; }
-
-        public T Reson { get; }
     }
 }

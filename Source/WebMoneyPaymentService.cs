@@ -7,16 +7,18 @@ namespace IMJunior
     {
         private readonly PaymentHandler _paymentHandler;
 
-        public WebMoneyPaymentService(PaymentHandler paymentHandler)
+        public WebMoneyPaymentService(PaymentHandler paymentHandler, string systemId)
         {
             _paymentHandler = paymentHandler;
+            SystemId = systemId;
         }
 
-        public string SystemId => "WebMoney";
+        public string SystemId { get; }
 
         public void BeginPayment(PaymentHandler paymentHandler)
         {
             Console.WriteLine("Вызов API WebMoney...");
+            _paymentHandler.ShowPaymentResult(this);
         }
 
         public Result<IPaymentResultReason> IsCorrectPayment()

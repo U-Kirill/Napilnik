@@ -31,4 +31,12 @@ namespace IMJunior
         private void HandleError(Result<IPaymentResultReason> result) =>
             result.Reson.Accept(_paymentErrorHandler);
     }
+
+    public class PaymentErrorHandler : IPaymentResultReasonVisitor
+    {
+        public void Visit(IPaymentResultReason visit)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }
