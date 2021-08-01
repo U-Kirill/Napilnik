@@ -7,6 +7,8 @@ namespace Source
 {
     public class Program
     {
+        private const string FileIsAbsentErrorText = "Файл db.sqlite не найден. Положите файл в папку вместе с exe.";
+
         public static void Main(string[] args)
         {
         }
@@ -22,12 +24,12 @@ namespace Source
         private void DisplayVoteOpportunity(string rawPassportData)
         {
             if (IsValidPassportData(rawPassportData))
-                DisplayResult(rawPassportData);
+                DisplayOpportunity(rawPassportData);
             else
                 UpdateResult("Неверный формат серии или номера паспорта");
         }
 
-        private void DisplayResult(string rawPassportData)
+        private void DisplayOpportunity(string rawPassportData)
         {
             try
             {
@@ -35,7 +37,7 @@ namespace Source
             }
             catch (SQLiteException ex)
             {
-                TryPrintError(ex);
+                TryReportAboutAbsetnDBFile(ex);
             }
         }
 
@@ -46,13 +48,14 @@ namespace Source
             UpdateResult(result);
         }
 
-        private void TryPrintError(SQLiteException ex)
+        private void TryReportAboutAbsetnDBFile(SQLiteException ex)
         {
-            int unrecognizedError = 1;
-            if (ex.ErrorCode != unrecognizedError)
+            int fileIsAbsentError = 1;
+            
+            if (ex.ErrorCode != fileIsAbsentError)
                 return;
 
-            int num2 = (int) MessageBox.Show("Файл db.sqlite не найден. Положите файл в папку вместе с exe.");
+            int num2 = (int) MessageBox.Show(FileIsAbsentErrorText);
         }
 
         private string GetOpportunityResult(string rawPassportData)
@@ -74,14 +77,6 @@ namespace Source
             return "По паспорту «" + this.passportTextbox.Text + "» доступ к бюллетеню на дистанционном электронном голосовании НЕ ПРЕДОСТАВЛЯЛСЯ";
         }
 
-        private DataTable GetVotingTable(string rawData)
-        {
-            string commandText = string.Format("select * from passports where num='{0}' limit 1;", (object) Form1.ComputeSha256Hash(rawData));
-            string connectionString = string.Format("Data Source=" + Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\db.sqlite");
-            DataTable dataTable = GetTable(connectionString, commandText);
-            return dataTable;
-        }
-
         private bool CanVote(DataTable dataTable)
         {
             int rowWithUser = 0;
@@ -90,9 +85,32 @@ namespace Source
             return Convert.ToBoolean(dataTable.Rows[rowWithUser].ItemArray[itemWithVoteOpportunity]);
         }
 
-        private bool HasResults(DataTable dataTable)
+        private bool HasPassportData() =>
+            GetRawPassportData() == string.Empty;
+
+        private bool HasResults(DataTable dataTable) => 
+            dataTable.Rows.Count > 0;
+
+        private bool IsValidPassportData(string rawData) => 
+            rawData.Length >= 10;
+
+        private void UpdateResult(string result) => 
+            this.textResult.Text = result;
+
+        private string GetRawPassportData() => 
+            this.passportTextbox.Text.Trim().Replace(" ", string.Empty);
+
+        private void AskPassportData()
         {
-            return dataTable.Rows.Count > 0;
+            int num1 = (int) MessageBox.Show("Введите серию и номер паспорта");
+        }
+
+        private DataTable GetVotingTable(string rawData)
+        {
+            string commandText = string.Format("select * from passports where num='{0}' limit 1;", (object) Form1.ComputeSha256Hash(rawData));
+            string connectionString = string.Format("Data Source=" + Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\db.sqlite");
+            DataTable dataTable = GetTable(connectionString, commandText);
+            return dataTable;
         }
 
         private DataTable GetTable(string connectionString, string commandText)
@@ -103,11 +121,11 @@ namespace Source
             return GetFilledTable(sqLiteDataAdapter);
         }
 
-        private DataTable GetFilledTable(SQLiteDataAdapter sqLiteDataAdapter)
+        private SQLiteConnection CreateConnection(string connectionString)
         {
-            DataTable dataTable = new DataTable();
-            sqLiteDataAdapter.Fill(dataTable);
-            return dataTable;
+            SQLiteConnection connection = new SQLiteConnection(connectionString);
+            connection.Open();
+            return connection;
         }
 
         private SQLiteDataAdapter CreateAdapter(string commandText, SQLiteConnection connection)
@@ -116,36 +134,11 @@ namespace Source
             return sqLiteDataAdapter;
         }
 
-        private SQLiteConnection CreateConnection(string connectionString)
+        private DataTable GetFilledTable(SQLiteDataAdapter sqLiteDataAdapter)
         {
-            SQLiteConnection connection = new SQLiteConnection(connectionString);
-            connection.Open();
-            return connection;
-        }
-
-        private bool IsValidPassportData(string rawData)
-        {
-            return rawData.Length >= 10;
-        }
-
-        private void UpdateResult(string result)
-        {
-            this.textResult.Text = result;
-        }
-
-        private string GetRawPassportData()
-        {
-            return this.passportTextbox.Text.Trim().Replace(" ", string.Empty);
-        }
-
-        private void AskPassportData()
-        {
-            int num1 = (int) MessageBox.Show("Введите серию и номер паспорта");
-        }
-
-        private bool HasPassportData()
-        {
-            return GetRawPassportData() == string.Empty;
+            DataTable dataTable = new DataTable();
+            sqLiteDataAdapter.Fill(dataTable);
+            return dataTable;
         }
     }
 }
