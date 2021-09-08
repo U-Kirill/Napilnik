@@ -14,13 +14,11 @@ namespace Source
         {
             try
             {
-                _voterRecords =
-                    new VoterRecords(string.Format("Data Source=" + Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\db.sqlite"));
+                _voterRecords = new VoterRecords();
             }
             catch (Exception e)
             {
-                if (e.ErrorCode == 1)
-                    ShowWindow("Файл db.sqlite не найден. Положите файл в папку вместе с exe.");
+                ShowWindow(e.Message);
             }
         }
         
@@ -40,15 +38,15 @@ namespace Source
                 return;
             }
 
-            DataRow voiterRow = _voterRecords.Find(passport);
+            Voiter voiter = _voterRecords.Find(passport);
 
-            if (voiterRow == null)
+            if (voiter == null)
             {
                 RefreshResult("Паспорт «" + passport.RawSeries + "» в списке участников дистанционного голосования НЕ НАЙДЕН");
                 return;
             }
 
-            if (Convert.ToBoolean(voiterRow.ItemArray[1]))
+            if (voiter.CanVote)
                 RefreshResult("По паспорту «" + passport.RawSeries + "» доступ к бюллетеню на дистанционном электронном голосовании ПРЕДОСТАВЛЕН");
             else
                 RefreshResult("По паспорту «" + passport.RawSeries + "» доступ к бюллетеню на дистанционном электронном голосовании НЕ ПРЕДОСТАВЛЯЛСЯ");
@@ -71,8 +69,7 @@ namespace Source
         
         public readonly string FormattedSeries;
         public readonly string RawSeries;
-
-
+        
         public Passport(string passportSeries)
         {
             RawSeries = passportSeries ?? throw new ArgumentNullException(nameof(passportSeries));
@@ -86,24 +83,16 @@ namespace Source
 
     public class VoterRecords : IDisposable
     {
-        private string _connectionString;
-        private SQLiteConnection _connection;
-
-        private VoteDBConnection _voteDbConnection;
-
-        public VoterRecords(string connectionString)
-        {
-            OpenConnection(connectionString);
-        }
+        private readonly VoteDBConnection _voteDbConnection = new VoteDBConnection();
 
         public void Dispose()
         {
-            _connection.Close();
+            _voteDbConnection.Dispose();
         }
 
-        public DataRow Find(Passport passport)
+        public Voiter Find(Passport passport)
         {
-            string commandText = string.Format("select * from passports where num='{0}' limit 1;", (object)Form1.ComputeSha256Hash(passport.FormattedSeries));
+            string commandText = CreateCommand(passport);
 
             SQLiteDataAdapter sqLiteDataAdapter = _voteDbConnection.CreateAdapter(commandText);
             DataTable dataTable = new DataTable();
@@ -111,37 +100,33 @@ namespace Source
 
 
             if (dataTable.Rows.Count > 0)
-                return dataTable.Rows[0];
+                return new Voiter(dataTable.Rows[0], passport);
 
             return null;
         }
 
-        private void OpenConnection(string connectionString)
-        {
-            try
-            {
-                OpenSqlConnection(connectionString);
-            }
-            catch (Exception e)
-            {
-                if (e.ErrorCode == 1)
-                    int num2 = (int)MessageBox.Show("Файл db.sqlite не найден. Положите файл в папку вместе с exe.");
+        private string CreateCommand(Passport passport) => 
+            string.Format("select * from passports where num='{0}' limit 1;", (object)Form1.ComputeSha256Hash(passport.FormattedSeries));
+    }
 
-                throw;
-            }
+    public class Voiter
+    {
+        public Voiter(DataRow dataTableRow, Passport passport)
+        {
+            Pasport = passport;
+            CanVote = Convert.ToBoolean(dataTableRow.ItemArray[1]);
         }
 
-        private void OpenSqlConnection(string connectionString)
-        {
-            _connection = new SQLiteConnection(connectionString);
-            _connection.Open();
-        }
+        public bool CanVote { get; }
+
+        public Passport Pasport { get; }
     }
 
     public class VoteDBConnection : IDisposable
     {
-        public SQLiteConnection Connection { get; private set; }
-        private string _connectionString = string.Format("Data Source=" + Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\db.sqlite");
+        private readonly string _connectionString = string.Format("Data Source=" + Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\db.sqlite");
+        
+        private SQLiteConnection _connection;
 
         public VoteDBConnection()
         {
@@ -150,11 +135,11 @@ namespace Source
 
         public void Dispose()
         {
-            Connection.Close();
+            _connection.Close();
         }
 
         public SQLiteDataAdapter CreateAdapter(string commandText) => 
-            new SQLiteDataAdapter(new SQLiteCommand(commandText, Connection));
+            new SQLiteDataAdapter(new SQLiteCommand(commandText, _connection));
 
         private void OpenConnection(string connectionString)
         {
@@ -173,8 +158,8 @@ namespace Source
 
         private void OpenSqlConnection(string connectionString)
         {
-            Connection = new SQLiteConnection(connectionString);
-            Connection.Open();
+            _connection = new SQLiteConnection(connectionString);
+            _connection.Open();
         }
     }
 
