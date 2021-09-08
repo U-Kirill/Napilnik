@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Data.SQLite;
 using System.IO;
 using System.Reflection;
 
@@ -87,7 +88,8 @@ namespace Source
     {
         private string _connectionString;
         private SQLiteConnection _connection;
-        
+
+        private VoteDBConnection _voteDbConnection;
 
         public VoterRecords(string connectionString)
         {
@@ -102,8 +104,8 @@ namespace Source
         public DataRow Find(Passport passport)
         {
             string commandText = string.Format("select * from passports where num='{0}' limit 1;", (object)Form1.ComputeSha256Hash(passport.FormattedSeries));
-            
-            SQLiteDataAdapter sqLiteDataAdapter = new SQLiteDataAdapter(new SQLiteCommand(commandText, _connection));
+
+            SQLiteDataAdapter sqLiteDataAdapter = _voteDbConnection.CreateAdapter(commandText);
             DataTable dataTable = new DataTable();
             sqLiteDataAdapter.Fill(dataTable);
 
@@ -133,6 +135,57 @@ namespace Source
         {
             _connection = new SQLiteConnection(connectionString);
             _connection.Open();
+        }
+    }
+
+    public class VoteDBConnection : IDisposable
+    {
+        public SQLiteConnection Connection { get; private set; }
+        private string _connectionString = string.Format("Data Source=" + Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\db.sqlite");
+
+        public VoteDBConnection()
+        {
+            OpenConnection(_connectionString);
+        }
+
+        public void Dispose()
+        {
+            Connection.Close();
+        }
+
+        public SQLiteDataAdapter CreateAdapter(string commandText) => 
+            new SQLiteDataAdapter(new SQLiteCommand(commandText, Connection));
+
+        private void OpenConnection(string connectionString)
+        {
+            try
+            {
+                OpenSqlConnection(connectionString);
+            }
+            catch (SQLiteException e)
+            {
+                if (e.ErrorCode == 1)
+                    throw new MissingDataBaseFileException(_connectionString, e);
+
+                throw;
+            }
+        }
+
+        private void OpenSqlConnection(string connectionString)
+        {
+            Connection = new SQLiteConnection(connectionString);
+            Connection.Open();
+        }
+    }
+
+    public sealed class MissingDataBaseFileException : Exception
+    {
+        private const string _message = "Файл db.sqlite не найден. Положите файл в папку вместе с exe.";
+
+        public MissingDataBaseFileException(string connectionString, Exception inner)
+            : base(_message, inner)
+        {
+            Data["Connection String"] = connectionString;
         }
     }
 }
