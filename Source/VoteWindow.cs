@@ -38,19 +38,24 @@ namespace Source
                 return;
             }
 
-            Voiter voiter = _voterRecords.Find(passport);
+            Voter voter = _voterRecords.Find(passport);
 
-            if (voiter == null)
+            if (voter == null)
             {
                 RefreshResult("Паспорт «" + passport.RawSeries + "» в списке участников дистанционного голосования НЕ НАЙДЕН");
                 return;
             }
 
-            if (voiter.CanVote)
-                RefreshResult("По паспорту «" + passport.RawSeries + "» доступ к бюллетеню на дистанционном электронном голосовании ПРЕДОСТАВЛЕН");
-            else
-                RefreshResult("По паспорту «" + passport.RawSeries + "» доступ к бюллетеню на дистанционном электронном голосовании НЕ ПРЕДОСТАВЛЯЛСЯ");
+
+            string message = GetVoteOpportunityMessage(voter, passport);
+
+            RefreshResult(message);
         }
+
+        private string GetVoteOpportunityMessage(Voter voter, Passport passport) =>
+            voter.CanVote
+                ? "По паспорту «" + passport.RawSeries + "» доступ к бюллетеню на дистанционном электронном голосовании ПРЕДОСТАВЛЕН"
+                : "По паспорту «" + passport.RawSeries + "» доступ к бюллетеню на дистанционном электронном голосовании НЕ ПРЕДОСТАВЛЯЛСЯ";
 
         private void RefreshResult(string result)
         {
@@ -85,33 +90,42 @@ namespace Source
     {
         private readonly VoteDBConnection _voteDbConnection = new VoteDBConnection();
 
-        public void Dispose()
-        {
+        public void Dispose() => 
             _voteDbConnection.Dispose();
-        }
 
-        public Voiter Find(Passport passport)
+        public Voter Find(Passport passport)
         {
             string commandText = CreateCommand(passport);
 
             SQLiteDataAdapter sqLiteDataAdapter = _voteDbConnection.CreateAdapter(commandText);
-            DataTable dataTable = new DataTable();
-            sqLiteDataAdapter.Fill(dataTable);
-
-
-            if (dataTable.Rows.Count > 0)
-                return new Voiter(dataTable.Rows[0], passport);
+            DataTable dataTable = CreateFilledDataTable(sqLiteDataAdapter);
+            
+            if (HasVoter(dataTable))
+                return new Voter(GetVoterRow(dataTable), passport);
 
             return null;
+        }
+
+        private  DataRow GetVoterRow(DataTable dataTable) => 
+            dataTable.Rows[0];
+
+        private bool HasVoter(DataTable dataTable) => 
+            dataTable.Rows.Count > 0;
+
+        private DataTable CreateFilledDataTable(SQLiteDataAdapter sqLiteDataAdapter)
+        {
+            DataTable dataTable = new DataTable();
+            sqLiteDataAdapter.Fill(dataTable);
+            return dataTable;
         }
 
         private string CreateCommand(Passport passport) => 
             string.Format("select * from passports where num='{0}' limit 1;", (object)Form1.ComputeSha256Hash(passport.FormattedSeries));
     }
 
-    public class Voiter
+    public class Voter
     {
-        public Voiter(DataRow dataTableRow, Passport passport)
+        public Voter(DataRow dataTableRow, Passport passport)
         {
             Pasport = passport;
             CanVote = Convert.ToBoolean(dataTableRow.ItemArray[1]);
