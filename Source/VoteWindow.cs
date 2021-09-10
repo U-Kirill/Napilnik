@@ -45,17 +45,17 @@ namespace Source
         }
 
         private void DisplayVoteOpportunity(Voter voter) => 
-            RefreshResult(GetVoteOpportunityMessage(voter));
+            RefreshResult(string.Format(GetVoteOpportunityMessage(voter), voter.Passport.RawSeries));
 
         private string GetVoteOpportunityMessage(Voter voter) =>
             voter.Registred 
                 ? GetVoteAccessMessage(voter) 
-                : string.Format(PassportNotExistMessage, voter.Passport.RawSeries);
+                : PassportNotExistMessage;
 
         private string GetVoteAccessMessage(Voter voter) =>
             voter.CanVote
-                ? string.Format(VotingAccessMessage, voter.Passport.RawSeries)
-                : string.Format(VotingDeclineMessage, voter.Passport.RawSeries);
+                ? VotingAccessMessage
+                : VotingDeclineMessage;
 
         private void CreateVoterRecords()
         {
