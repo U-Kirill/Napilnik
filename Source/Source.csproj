@@ -12,6 +12,7 @@
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
       <PackageReference Include="StyleCop.StyleCop" Version="2021.1.1" />
+      <PackageReference Include="System.Data.SQLite.Core" Version="1.0.115" />
     </ItemGroup>
 
 </Project>
