@@ -1,16 +1,63 @@
 ﻿using System;
-using System.Data;
-using System.Data.SQLite;
-using System.IO;
-using System.Reflection;
 
 namespace Source
 {
     public class VoteWindow
     {
-        private readonly VoterRecords _voterRecords;
-        
+        private const string PassportNotExistMessage = "Паспорт «{0}» в списке участников дистанционного голосования НЕ НАЙДЕН";
+        private const string VotingAccessMessage = "По паспорту «{0}» доступ к бюллетеню на дистанционном электронном голосовании ПРЕДОСТАВЛЕН";
+
+        private VoterRecords _voterRecords;
+        private string VotingDeclineMessage = "По паспорту «{0}» доступ к бюллетеню на дистанционном электронном голосовании НЕ ПРЕДОСТАВЛЯЛСЯ";
+
         public VoteWindow()
+        {
+            CreateVoterRecords();
+        }
+
+        public void OnCheckButton(object sender, EventArgs e)
+        {
+            var passport = new Passport(this.passportTextbox.Text);
+
+            if (TryInformAboutBadSerial(passport))
+                return;
+
+            Voter voter = _voterRecords.Find(passport);
+
+            DisplayVoteOpportunity(voter);
+        }
+
+        private bool TryInformAboutBadSerial(Passport passport)
+        {
+            if (!passport.HasSeries)
+            {
+                ShowWindow("Введите серию и номер паспорта");
+                return true;
+            }
+
+            if (!passport.IsValid)
+            {
+                RefreshResult("Неверный формат серии или номера паспорта");
+                return true;
+            }
+
+            return false;
+        }
+
+        private void DisplayVoteOpportunity(Voter voter) => 
+            RefreshResult(GetVoteOpportunityMessage(voter));
+
+        private string GetVoteOpportunityMessage(Voter voter) =>
+            voter.Registred 
+                ? GetVoteAccessMessage(voter) 
+                : string.Format(PassportNotExistMessage, voter.Passport.RawSeries);
+
+        private string GetVoteAccessMessage(Voter voter) =>
+            voter.CanVote
+                ? string.Format(VotingAccessMessage, voter.Passport.RawSeries)
+                : string.Format(VotingDeclineMessage, voter.Passport.RawSeries);
+
+        private void CreateVoterRecords()
         {
             try
             {
@@ -21,170 +68,11 @@ namespace Source
                 ShowWindow(e.Message);
             }
         }
-        
-        private void checkButton_Click(object sender, EventArgs e)
-        {
-            Passport passport = new Passport(this.passportTextbox.Text);
-            
-            if (!passport.HasSeries)
-            {
-                ShowWindow("Введите серию и номер паспорта");
-                return;
-            }
-            
-            if (!passport.IsValid)
-            {
-                RefreshResult("Неверный формат серии или номера паспорта");
-                return;
-            }
 
-            Voter voter = _voterRecords.Find(passport);
-
-            if (voter == null)
-            {
-                RefreshResult("Паспорт «" + passport.RawSeries + "» в списке участников дистанционного голосования НЕ НАЙДЕН");
-                return;
-            }
-
-
-            string message = GetVoteOpportunityMessage(voter, passport);
-
-            RefreshResult(message);
-        }
-
-        private string GetVoteOpportunityMessage(Voter voter, Passport passport) =>
-            voter.CanVote
-                ? "По паспорту «" + passport.RawSeries + "» доступ к бюллетеню на дистанционном электронном голосовании ПРЕДОСТАВЛЕН"
-                : "По паспорту «" + passport.RawSeries + "» доступ к бюллетеню на дистанционном электронном голосовании НЕ ПРЕДОСТАВЛЯЛСЯ";
-
-        private void RefreshResult(string result)
-        {
+        private void RefreshResult(string result) => 
             this.textResult.Text = result;
-        }
 
-        private void ShowWindow(string message)
-        {
+        private void ShowWindow(string message) => 
             MessageBox.Show(message);
-        }
-    }
-
-    public class Passport
-    {
-        private const int MinSerialLenght = 10;
-        
-        public readonly string FormattedSeries;
-        public readonly string RawSeries;
-        
-        public Passport(string passportSeries)
-        {
-            RawSeries = passportSeries ?? throw new ArgumentNullException(nameof(passportSeries));
-            FormattedSeries = RawSeries.Trim().Replace(" ", string.Empty);
-        }
-
-        public bool HasSeries => FormattedSeries != string.Empty;
-
-        public bool IsValid => FormattedSeries.Length >= MinSerialLenght;
-    }
-
-    public class VoterRecords : IDisposable
-    {
-        private readonly VoteDBConnection _voteDbConnection = new VoteDBConnection();
-
-        public void Dispose() => 
-            _voteDbConnection.Dispose();
-
-        public Voter Find(Passport passport)
-        {
-            string commandText = CreateCommand(passport);
-
-            SQLiteDataAdapter sqLiteDataAdapter = _voteDbConnection.CreateAdapter(commandText);
-            DataTable dataTable = CreateFilledDataTable(sqLiteDataAdapter);
-            
-            if (HasVoter(dataTable))
-                return new Voter(GetVoterRow(dataTable), passport);
-
-            return null;
-        }
-
-        private  DataRow GetVoterRow(DataTable dataTable) => 
-            dataTable.Rows[0];
-
-        private bool HasVoter(DataTable dataTable) => 
-            dataTable.Rows.Count > 0;
-
-        private DataTable CreateFilledDataTable(SQLiteDataAdapter sqLiteDataAdapter)
-        {
-            DataTable dataTable = new DataTable();
-            sqLiteDataAdapter.Fill(dataTable);
-            return dataTable;
-        }
-
-        private string CreateCommand(Passport passport) => 
-            string.Format("select * from passports where num='{0}' limit 1;", (object)Form1.ComputeSha256Hash(passport.FormattedSeries));
-    }
-
-    public class Voter
-    {
-        public Voter(DataRow dataTableRow, Passport passport)
-        {
-            Pasport = passport;
-            CanVote = Convert.ToBoolean(dataTableRow.ItemArray[1]);
-        }
-
-        public bool CanVote { get; }
-
-        public Passport Pasport { get; }
-    }
-
-    public class VoteDBConnection : IDisposable
-    {
-        private readonly string _connectionString = string.Format("Data Source=" + Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\db.sqlite");
-        
-        private SQLiteConnection _connection;
-
-        public VoteDBConnection()
-        {
-            OpenConnection(_connectionString);
-        }
-
-        public void Dispose()
-        {
-            _connection.Close();
-        }
-
-        public SQLiteDataAdapter CreateAdapter(string commandText) => 
-            new SQLiteDataAdapter(new SQLiteCommand(commandText, _connection));
-
-        private void OpenConnection(string connectionString)
-        {
-            try
-            {
-                OpenSqlConnection(connectionString);
-            }
-            catch (SQLiteException e)
-            {
-                if (e.ErrorCode == 1)
-                    throw new MissingDataBaseFileException(_connectionString, e);
-
-                throw;
-            }
-        }
-
-        private void OpenSqlConnection(string connectionString)
-        {
-            _connection = new SQLiteConnection(connectionString);
-            _connection.Open();
-        }
-    }
-
-    public sealed class MissingDataBaseFileException : Exception
-    {
-        private const string _message = "Файл db.sqlite не найден. Положите файл в папку вместе с exe.";
-
-        public MissingDataBaseFileException(string connectionString, Exception inner)
-            : base(_message, inner)
-        {
-            Data["Connection String"] = connectionString;
-        }
     }
 }
