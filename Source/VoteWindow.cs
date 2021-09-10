@@ -6,9 +6,9 @@ namespace Source
     {
         private const string PassportNotExistMessage = "Паспорт «{0}» в списке участников дистанционного голосования НЕ НАЙДЕН";
         private const string VotingAccessMessage = "По паспорту «{0}» доступ к бюллетеню на дистанционном электронном голосовании ПРЕДОСТАВЛЕН";
+        private const string VotingDeclineMessage = "По паспорту «{0}» доступ к бюллетеню на дистанционном электронном голосовании НЕ ПРЕДОСТАВЛЯЛСЯ";
 
         private VoterRecords _voterRecords;
-        private string VotingDeclineMessage = "По паспорту «{0}» доступ к бюллетеню на дистанционном электронном голосовании НЕ ПРЕДОСТАВЛЯЛСЯ";
 
         public VoteWindow()
         {
