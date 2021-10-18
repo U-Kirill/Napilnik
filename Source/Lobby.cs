@@ -11,7 +11,7 @@ namespace Source
         //private readonly List<IPlayer> Players = new List<IPlayer>();
         private readonly List<LobbyConnection> _connections = new List<LobbyConnection>();
         private State _state;
-        private Chat _chat;
+        private Chat _chat = new Chat();
 
         public Lobby(int maxPlayers)
         {
@@ -20,14 +20,16 @@ namespace Source
         }
 
         public int MaxPlayers { get; }
-        public int ReadyPlayersCount => ReadyPlayers.Count();
+        
         public IEnumerable<LobbyConnection> ReadyPlayers => _connections.Where(x => x.IsPlayerReady);
+        
+        public int ReadyPlayersCount => ReadyPlayers.Count();
 
         public void Connect(LobbyConnection connection)
         {
             ValidateConnection(connection);
             _connections.Add(connection);
-            TryChangeState();
+            connection.StatusChanged += TryChangeState;
         }
 
         public bool CanConnect() => 
@@ -46,9 +48,17 @@ namespace Source
 
         public IEnumerable<Message> LoadMessage(int lastMessageId, IPlayer player)
         {
-            return _chat.LoadSince(lastMessageId);
-        } 
-        
+            IEnumerable<Message> messages = Array.Empty<Message>();
+            
+            if (CanUseChat(player))
+                messages = _chat.LoadSince(lastMessageId);
+            
+            return messages;
+        }
+
+        public bool HasPlayer(IPlayer player) => 
+            _connections.Any(x => x.Player == player);
+
         private void TryChangeState()
         {
             if (!CanConnect())
@@ -79,7 +89,7 @@ namespace Source
 
             public void Notify()
             {
-                IEnumerable<LobbyConnection> lobbyConnections = GetConnectionsForNotify(_lobby.ReadyPlayers);
+                IEnumerable<LobbyConnection> lobbyConnections = GetConnectionsForNotify(_lobby._connections);
 
                 foreach (LobbyConnection lobbyConnection in lobbyConnections)
                     lobbyConnection.OnChatUpdate();
@@ -87,11 +97,11 @@ namespace Source
 
             public bool CanUseChat(IPlayer player)
             {
-                IEnumerable<LobbyConnection> lobbyConnections = GetConnectionsForNotify(_lobby.ReadyPlayers);
+                IEnumerable<LobbyConnection> lobbyConnections = GetConnectionsForNotify(_lobby._connections);
                 return lobbyConnections.Any(x => x.Player == player);
             }
 
-            protected abstract IEnumerable<LobbyConnection> GetConnectionsForNotify(IEnumerable<LobbyConnection> lobbyReadyPlayers);
+            protected abstract IEnumerable<LobbyConnection> GetConnectionsForNotify(IEnumerable<LobbyConnection> allConnections);
         }
     }
 
@@ -102,7 +112,7 @@ namespace Source
         public GameState(Lobby lobby, IEnumerable<LobbyConnection> readyPlayers) : base(lobby) => 
             _readyPlayers = readyPlayers;
 
-        protected override IEnumerable<LobbyConnection> GetConnectionsForNotify(IEnumerable<LobbyConnection> lobbyReadyPlayers) => 
+        protected override IEnumerable<LobbyConnection> GetConnectionsForNotify(IEnumerable<LobbyConnection> allConnections) => 
             _readyPlayers;
     }
 
@@ -112,7 +122,7 @@ namespace Source
         {
         }
 
-        protected override IEnumerable<LobbyConnection> GetConnectionsForNotify(IEnumerable<LobbyConnection> lobbyReadyPlayers) => 
-            lobbyReadyPlayers;
+        protected override IEnumerable<LobbyConnection> GetConnectionsForNotify(IEnumerable<LobbyConnection> allConnections) => 
+            allConnections;
     }
 }

@@ -17,18 +17,21 @@ namespace Source
     {
         private readonly Lobby Lobby;
         private int _lastMessageID;
+        private readonly Player _player;
 
         public LobbyConnection(Player player, Lobby lobby)
         {
-            Player = player;
+            _player = player;
             Lobby = lobby;
+            _player.StatusChanged += OnPlayerChangeStatus;
         }
 
         public event Action ChatUpdated;
+        public event Action StatusChanged;
 
-        public bool IsPlayerReady => Player.IsReady;
+        public bool IsPlayerReady => _player.IsReady;
 
-        public IPlayer Player { get; }
+        public IPlayer Player => _player;
 
         public void PrintMessage(string message) => 
             Lobby.PrintMessage(message, Player);
@@ -40,14 +43,26 @@ namespace Source
 
         public IEnumerable<Message> ReadLastMessage()
         {
-            IEnumerable<Message> messages = Lobby.LoadMessage(_lastMessageID, Player);
-            _lastMessageID = messages.Last().Id;
+            IEnumerable<Message> messages = Lobby.LoadMessage(_lastMessageID, Player).ToArray();
+            UpdateLastMessageId(messages);
             return messages;
         }
 
         public void OnChatUpdate()
         {
             ChatUpdated?.Invoke();
+        }
+
+        private void OnPlayerChangeStatus()
+        {
+            StatusChanged?.Invoke();
+        }
+
+        private void UpdateLastMessageId(IEnumerable<Message> messages)
+        {
+            Message lastMessage = messages.LastOrDefault();
+            if(lastMessage != null)
+                _lastMessageID = lastMessage.Id;
         }
     }
 }

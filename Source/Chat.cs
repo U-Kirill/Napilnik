@@ -12,11 +12,11 @@ namespace Source
 
         public void Add(string message, IPlayer player)
         {
-            _messages.Add(new Message(_messagesCount, message, player.Name));
             _messagesCount++;
+            _messages.Add(new Message(_messagesCount, message, player.Name));
         }
 
         public IEnumerable<Message> LoadSince(int lastMessageId) => 
-            _messages.SkipWhile(x => x.Id != lastMessageId);
+            _messages.SkipWhile(x => x.Id <= lastMessageId);
     }
 }

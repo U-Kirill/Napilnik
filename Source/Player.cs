@@ -1,8 +1,12 @@
+using System;
+
 namespace Source
 {
     public class Player // in lobby will by IPlayer, which cant change IsReady state. But via regular Player is can
         : IPlayer
     {
+
+        public event Action StatusChanged;
         public bool IsReady { get; private set; }
         public string Name { get; }
         public ILobbyConnection Connection;
@@ -15,6 +19,13 @@ namespace Source
         public void Connect(ILobbyConnection connection)
         {
             Connection = connection;
+            IsReady = false;
+        }
+
+        public void MakeReady()
+        {
+            IsReady = true;
+            StatusChanged?.Invoke();
         }
     }
 }

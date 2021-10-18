@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Source
 {
@@ -11,15 +13,25 @@ namespace Source
 
         public void Connect(Player player, ILobby lobby)
         {
+            if (IsAnyLobbiesHas(player))
+                throw new InvalidOperationException();
+            
             Lobby targetLobby = GetLobby(lobby);
             LobbyConnection connection = new LobbyConnection(player, targetLobby);
             targetLobby.Connect(connection);
             player.Connect(connection);
         }
 
-        public void Create()
+        private bool IsAnyLobbiesHas(Player player)
         {
-            _lobbies.Add(new Lobby(_maxPlayers));
+            return _lobbies.Any(x => x.HasPlayer(player));
+        }
+
+        public ILobby Create()
+        {
+            var lobby = new Lobby(_maxPlayers);
+            _lobbies.Add(lobby);
+            return lobby;
         }
     
         private Lobby GetLobby(ILobby lobby) => 
