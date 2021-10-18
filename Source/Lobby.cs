@@ -11,6 +11,7 @@ namespace Source
         //private readonly List<IPlayer> Players = new List<IPlayer>();
         private readonly List<LobbyConnection> _connections = new List<LobbyConnection>();
         private State _state;
+        private Chat _chat;
 
         public Lobby(int maxPlayers)
         {
@@ -32,10 +33,10 @@ namespace Source
         public bool CanConnect() => 
             ReadyPlayersCount < MaxPlayers;
 
-        public void PrintMessage(IPlayer player, string message)
+        public void PrintMessage(string message, IPlayer player)
         {
             if (CanUseChat(player))
-                _chat.Add(player, message);
+                _chat.Add(message, player);
             
             _state.Notify();
         }
@@ -43,12 +44,18 @@ namespace Source
         public bool CanUseChat(IPlayer player) => 
             _state.CanUseChat(player);
 
+        public IEnumerable<Message> LoadMessage(int lastMessageId, IPlayer player)
+        {
+            return _chat.LoadSince(lastMessageId);
+        } 
+        
         private void TryChangeState()
         {
             if (!CanConnect())
                 ChangeState();
         }
-
+        
+        
         private void ChangeState() => 
             _state = new GameState(this, ReadyPlayers);
 

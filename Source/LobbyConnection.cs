@@ -1,23 +1,22 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Source
 {
     public interface ILobbyConnection
     {
-        bool IsPlayerReady { get; set; }
+        bool IsPlayerReady { get; }
         event Action ChatUpdated;
         void PrintMessage(string message);
-        void ReadAllMessages();
-        void ReadLastMessage();
+        IEnumerable<Message> ReadLastMessage();
         bool CanUseChat();
-        void MakeReady();
     }
 
     public class LobbyConnection : ILobbyConnection
     {
         private readonly Lobby Lobby;
-
-        public bool IsPlayerReady { get; set; }
+        private int _lastMessageID;
 
         public LobbyConnection(Player player, Lobby lobby)
         {
@@ -27,37 +26,28 @@ namespace Source
 
         public event Action ChatUpdated;
 
+        public bool IsPlayerReady => Player.IsReady;
+
         public IPlayer Player { get; }
-        
-        public void PrintMessage(string message)
-        {
-            Lobby.PrintMessage(Player, message);
-        }
 
-        public void ReadAllMessages()
-        {
-        
-        }
+        public void PrintMessage(string message) => 
+            Lobby.PrintMessage(message, Player);
 
-        public void ReadLastMessage()
-        {
-      
-        }
-    
         public bool CanUseChat()
         {
             return Lobby.CanUseChat(Player);
         }
 
-        public void MakeReady()
+        public IEnumerable<Message> ReadLastMessage()
         {
-            IsPlayerReady = true;
+            IEnumerable<Message> messages = Lobby.LoadMessage(_lastMessageID, Player);
+            _lastMessageID = messages.Last().Id;
+            return messages;
         }
 
         public void OnChatUpdate()
         {
-            if (CanUseChat())
-                ChatUpdated?.Invoke();
+            ChatUpdated?.Invoke();
         }
     }
 }

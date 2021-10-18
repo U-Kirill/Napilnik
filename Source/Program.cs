@@ -19,5 +19,6 @@
   public interface IPlayer
   {
     bool IsReady { get; }
+    string Name { get; }
   }
 }

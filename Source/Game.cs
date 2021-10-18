@@ -5,6 +5,7 @@ namespace Source
     public class Game
     {
         private List<Lobby> _lobbies = new List<Lobby>();
+        private int _maxPlayers = 2;
 
         public IReadOnlyList<ILobby> Lobbies => _lobbies;
 
@@ -16,6 +17,10 @@ namespace Source
             player.Connect(connection);
         }
 
+        public void Create()
+        {
+            _lobbies.Add(new Lobby(_maxPlayers));
+        }
     
         private Lobby GetLobby(ILobby lobby) => 
             _lobbies.Find(x => x == lobby);

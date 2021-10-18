@@ -4,7 +4,13 @@ namespace Source
         : IPlayer
     {
         public bool IsReady { get; private set; }
+        public string Name { get; }
         public ILobbyConnection Connection;
+
+        public Player(string name)
+        {
+            Name = name;
+        }
 
         public void Connect(ILobbyConnection connection)
         {
