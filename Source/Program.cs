@@ -39,6 +39,8 @@ namespace Source
 
       Players.Add(player);
     }
+
+    public event Action ChatUpdated;
   }
 
   public interface IPlayer
@@ -50,5 +52,48 @@ namespace Source
     : IPlayer
   {
     public bool IsReady { get; private set; }
+    public LobbyConnection Connection;
+  }
+
+  public class LobbyConnection
+  {
+    private readonly Player Player;
+    private readonly Lobby Lobby;
+
+    public LobbyConnection(Player player, Lobby lobby)
+    {
+      Player = player;
+      Lobby = lobby;
+
+      Lobby.ChatUpdated += OnChatUpdate;
+    }
+
+    public event Action ChatUpdated;
+
+    public void PrintMessage(string message)
+    {
+      Lobby.PrintMessage(Player, message);
+    }
+
+    public void ReadAllMessages()
+    {
+        
+    }
+
+    public void ReadLastMessage()
+    {
+      
+    }
+    
+    public bool CanUseChat()
+    {
+      return Lobby.CanUseChat(Player);
+    }
+
+    private void OnChatUpdate()
+    {
+      if (CanUseChat())
+        ChatUpdated?.Invoke();
+    }
   }
 }
