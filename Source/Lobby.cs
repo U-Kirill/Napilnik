@@ -29,11 +29,28 @@ namespace Source
             TryChangeState();
         }
 
+        public bool CanConnect() => 
+            ReadyPlayersCount < MaxPlayers;
+
+        public void PrintMessage(IPlayer player, string message)
+        {
+            if (CanUseChat(player))
+                _chat.Add(player, message);
+            
+            _state.Notify();
+        }
+
+        public bool CanUseChat(IPlayer player) => 
+            _state.CanUseChat(player);
+
         private void TryChangeState()
         {
             if (!CanConnect())
-                _state = new GameState(this, ReadyPlayers);
+                ChangeState();
         }
+
+        private void ChangeState() => 
+            _state = new GameState(this, ReadyPlayers);
 
         private void ValidateConnection(LobbyConnection connection)
         {
@@ -44,9 +61,6 @@ namespace Source
                 throw new InvalidOperationException();
         }
 
-        public bool CanConnect() => 
-            ReadyPlayersCount < MaxPlayers;
-        
         public abstract class State
         {
             private Lobby _lobby;
@@ -64,7 +78,7 @@ namespace Source
                     lobbyConnection.OnChatUpdate();
             }
 
-            public bool CanSpeak(IPlayer player)
+            public bool CanUseChat(IPlayer player)
             {
                 IEnumerable<LobbyConnection> lobbyConnections = GetConnectionsForNotify(_lobby.ReadyPlayers);
                 return lobbyConnections.Any(x => x.Player == player);
@@ -72,7 +86,6 @@ namespace Source
 
             protected abstract IEnumerable<LobbyConnection> GetConnectionsForNotify(IEnumerable<LobbyConnection> lobbyReadyPlayers);
         }
-
     }
 
     internal class GameState : Lobby.State
