@@ -11,6 +11,7 @@ namespace Source
         void PrintMessage(string message);
         IEnumerable<Message> ReadLastMessage();
         bool CanUseChat();
+        void ApplyCommand(ILobbyCommand command);
     }
 
     public class LobbyConnection : ILobbyConnection
@@ -35,6 +36,11 @@ namespace Source
 
         public IPlayer Player => _player;
 
+        public void ApplyCommand(ILobbyCommand command)
+        {
+            command.Execute(_player, Lobby);
+        }
+        
         public void PrintMessage(string message) =>
             Lobby.PrintMessage(message, Player);
 
@@ -60,5 +66,55 @@ namespace Source
             if(lastMessage != null)
                 _lastMessageID = lastMessage.Id;
         }
+    }
+
+    public interface ILobbyCommand
+    {
+        void Execute(Player player, Lobby lobby);
+    }
+    
+    public interface IReturnableLobbyCommand<T> : ILobbyCommand
+    {
+        T Result { get; }
+    }
+
+    public class CanUseChatCommand : IReturnableLobbyCommand<bool>
+    {
+        public bool Result { get; private set; }
+
+        public void Execute(Player player, Lobby lobby)
+        {
+            Result = lobby.CanUseChat(player);
+        }
+    }
+    
+    public class GetUnreadedMessagesCommand : IReturnableLobbyCommand<IEnumerable<Message>>
+    {
+        private int _lastMessageId;
+
+        public GetUnreadedMessagesCommand(int lastMessageId)
+        {
+            _lastMessageId = lastMessageId;
+        }
+
+        public IEnumerable<Message> Result { get; private set; }
+
+        public void Execute(Player player, Lobby lobby)
+        {
+            Result = lobby.LoadMessage(_lastMessageId,player);
+        }
+    }
+
+    public class PrintMessageCommand : ILobbyCommand
+    {
+        private string _message;
+
+        public PrintMessageCommand(string message)
+        {
+            _message = message;
+        }
+
+        public void Execute(Player player, Lobby lobby) => 
+            lobby.PrintMessage(_message, player);
     }
 }
