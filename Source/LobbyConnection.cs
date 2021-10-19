@@ -6,66 +6,40 @@ namespace Source
 {
     public interface ILobbyConnection
     {
-        bool IsPlayerReady { get; }
         event Action ChatUpdated;
-        void PrintMessage(string message);
-        IEnumerable<Message> ReadLastMessage();
-        bool CanUseChat();
+
+        bool IsPlayerReady { get; }
+
         void ApplyCommand(ILobbyCommand command);
     }
 
     public class LobbyConnection : ILobbyConnection
     {
-        private int _lastMessageID;
-        
-        private readonly Lobby Lobby;
+        private readonly Lobby _lobby;
         private readonly Player _player;
 
         public LobbyConnection(Player player, Lobby lobby)
         {
             _player = player;
-            Lobby = lobby;
-            _player.StatusChanged += OnPlayerChangeStatus;
+            _lobby = lobby;
         }
 
         public event Action ChatUpdated;
-        
-        public event Action StatusChanged;
 
-        public bool IsPlayerReady => _player.IsReady;
+        public bool IsPlayerReady { get; private set; }
 
         public IPlayer Player => _player;
 
         public void ApplyCommand(ILobbyCommand command)
         {
-            command.Execute(_player, Lobby);
+            command.Execute(_player, _lobby);
         }
-        
-        public void PrintMessage(string message) =>
-            Lobby.PrintMessage(message, Player);
-
-        public bool CanUseChat() => 
-            Lobby.CanUseChat(Player);
 
         public void OnChatUpdate() => 
             ChatUpdated?.Invoke();
 
-        private void OnPlayerChangeStatus() => 
-            StatusChanged?.Invoke();
-
-        public IEnumerable<Message> ReadLastMessage()
-        {
-            IEnumerable<Message> messages = Lobby.LoadMessage(_lastMessageID, Player).ToArray();
-            UpdateLastMessageId(messages);
-            return messages;
-        }
-
-        private void UpdateLastMessageId(IEnumerable<Message> messages)
-        {
-            Message lastMessage = messages.LastOrDefault();
-            if(lastMessage != null)
-                _lastMessageID = lastMessage.Id;
-        }
+        public void MakeReady() => 
+            IsPlayerReady = true;
     }
 
     public interface ILobbyCommand

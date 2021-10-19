@@ -22,10 +22,8 @@ namespace Source
             player.Connect(connection);
         }
 
-        private bool IsAnyLobbiesHas(Player player)
-        {
-            return _lobbies.Any(x => x.HasPlayer(player));
-        }
+        private bool IsAnyLobbiesHas(Player player) => 
+            _lobbies.Any(x => x.HasPlayer(player));
 
         public ILobby Create()
         {

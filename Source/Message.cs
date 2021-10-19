@@ -14,5 +14,10 @@ namespace Source
         public string Text { get; }
 
         public string Author { get; }
+
+        public override string ToString()
+        {
+            return $"[{Id}] - {Author}: {Text}";
+        }
     }
 }

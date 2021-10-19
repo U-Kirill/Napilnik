@@ -4,43 +4,61 @@ using System.Linq;
 
 namespace Source
 {
-    public class Player // in lobby will by IPlayer, which cant change IsReady state. But via regular Player is can
-        : IPlayer
+    public class Player : IPlayer
     {
-        public event Action StatusChanged;
-        
-        public bool IsReady { get; private set; }
-        
-        public string Name { get; }
-        
-        public ILobbyConnection Connection;
+        private ILobbyConnection _connection;
         private int _lastMessageId;
+        
+
+        public bool IsReady => _connection.IsPlayerReady;
+
+        public string Name { get; }
 
         public Player(string name)
         {
             Name = name;
         }
 
-        public void PrintMessage(string message)
+        public void Connect(ILobbyConnection connection)
         {
-            Connection.ApplyCommand(new PrintMessageCommand(message));
+            _connection = connection;
+            _connection.ChatUpdated += ShowMessage;
         }
-        
+
+        public void MakeReady()
+        {
+            _connection.ApplyCommand(new ReadyCommand());
+        }
+
         public bool CanUseChat()
         {
             CanUseChatCommand command = new CanUseChatCommand();
-            Connection.ApplyCommand(command);
+            _connection.ApplyCommand(command);
             return command.Result;
         }
 
-        public IEnumerable<Message> GetUnreaded()
+        public void PrintMessage(string message)
         {
-            var command = new GetUnreadedMessagesCommand(_lastMessageId);
-            Connection.ApplyCommand(command);
-            IEnumerable<Message> messages = command.Result;
+            _connection.ApplyCommand(new PrintMessageCommand(message));
+        }
+
+        public IEnumerable<Message> GetUnreadMessage()
+        {
+            IEnumerable<Message> messages = ReceiveUnreadMessages().ToArray();
             TryRefreshLastMessageId(messages);
             return messages;
         }
+
+        private IEnumerable<Message> ReceiveUnreadMessages()
+        {
+            var command = new GetUnreadedMessagesCommand(_lastMessageId);
+            _connection.ApplyCommand(command);
+            IEnumerable<Message> messages = command.Result;
+            return messages;
+        }
+
+        private void ShowMessage() => 
+            GetUnreadMessage().ToList().ForEach(x => Console.WriteLine($"{Name} see: {x}"));
 
         private void TryRefreshLastMessageId(IEnumerable<Message> messages)
         {
@@ -48,17 +66,13 @@ namespace Source
             if (last != null)
                 _lastMessageId = last.Id;
         }
+    }
 
-        public void Connect(ILobbyConnection connection)
+    public class ReadyCommand : ILobbyCommand
+    {
+        public void Execute(Player player, Lobby lobby)
         {
-            Connection = connection;
-            IsReady = false;
-        }
-
-        public void MakeReady()
-        {
-            IsReady = true;
-            StatusChanged?.Invoke();
+            lobby.MakeReady(player);
         }
     }
 }

@@ -11,19 +11,19 @@ namespace Source
       ILobby lobby = game.Create();
       Player player1 = new Player("player 1");
       
-      Console.WriteLine($"can connect {lobby.CanConnect()}");
+      Console.WriteLine($"can connect {lobby.HasFreeSlots()}");
       game.Connect(player1, lobby);
       Console.WriteLine($"ReadyPlayersCount {lobby.ReadyPlayersCount}");
       player1.MakeReady();
       Console.WriteLine($"ReadyPlayersCount {lobby.ReadyPlayersCount}");
-      player1.Connection.ChatUpdated += () => player1.Connection.ReadLastMessage().ToList().ForEach(x => Console.WriteLine($"reactivity: [{x.Id}] - {x.Author}: {x.Text}"));
+      //player1.Connection.ChatUpdated += () => player1.GetUnreadMessage().ToList().ForEach(x => Console.WriteLine($"reactivity: [{x.Id}] - {x.Author}: {x.Text}"));
       player1.PrintMessage("Hello from player 1");
       player1.PrintMessage("What's up");
 
       var player2 = new Player("player 2");
       game.Connect(player2, lobby);
       Console.WriteLine("How player 2 sees a chat:");
-      player2.GetUnreaded().ToList().ForEach(x => Console.WriteLine($"[{x.Id}] - {x.Author}: {x.Text}"));
+      player2.GetUnreadMessage().ToList().ForEach(x => Console.WriteLine($"[{x.Id}] - {x.Author}: {x.Text}"));
 
       var player3 = new Player("player 3");
       game.Connect(player3, lobby);
@@ -34,7 +34,7 @@ namespace Source
       player4.PrintMessage("Hello from player 4");
       
       Console.WriteLine("How player 4 sees a chat:");
-      player4.GetUnreaded().ToList().ForEach(x => Console.WriteLine($"[{x.Id}] - {x.Author}: {x.Text}"));
+      player4.GetUnreadMessage().ToList().ForEach(x => Console.WriteLine($"[{x.Id}] - {x.Author}: {x.Text}"));
 
       Console.WriteLine($"Try What's up from 4");
       player4.PrintMessage("What's up from 4");
@@ -47,11 +47,11 @@ namespace Source
       
       Console.WriteLine($"Try print from 1 and read from 4");
       player1.PrintMessage("Hello from player 1");
-      player4.GetUnreaded().ToList().ForEach(x => Console.WriteLine($"[{x.Id}] - {x.Author}: {x.Text}"));
+      player4.GetUnreadMessage().ToList().ForEach(x => Console.WriteLine($"[{x.Id}] - {x.Author}: {x.Text}"));
       
       Console.WriteLine($"Try print from 1 and read from 2");
       player1.PrintMessage("Hello from player 1");
-      player2.GetUnreaded().ToList().ForEach(x => Console.WriteLine($"[{x.Id}] - {x.Author}: {x.Text}"));
+      player2.GetUnreadMessage().ToList().ForEach(x => Console.WriteLine($"[{x.Id}] - {x.Author}: {x.Text}"));
       
       Console.ReadLine();
     }
@@ -61,7 +61,7 @@ namespace Source
   {
     int MaxPlayers { get; }
     int ReadyPlayersCount { get; }
-    bool CanConnect();
+    bool HasFreeSlots();
   }
 
   

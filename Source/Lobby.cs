@@ -7,11 +7,10 @@ namespace Source
 {
     public class Lobby : ILobby
     {
-    
-        //private readonly List<IPlayer> Players = new List<IPlayer>();
-        private readonly List<LobbyConnection> _connections = new List<LobbyConnection>();
         private State _state;
-        private Chat _chat = new Chat();
+
+        private readonly List<LobbyConnection> _connections = new List<LobbyConnection>();
+        private readonly Chat _chat = new Chat();
 
         public Lobby(int maxPlayers)
         {
@@ -20,23 +19,38 @@ namespace Source
         }
 
         public int MaxPlayers { get; }
-        
-        public IEnumerable<LobbyConnection> ReadyPlayers => _connections.Where(x => x.IsPlayerReady);
-        
+
         public int ReadyPlayersCount => ReadyPlayers.Count();
+
+        private IEnumerable<LobbyConnection> ReadyPlayers => _connections.Where(x => x.IsPlayerReady);
 
         public void Connect(LobbyConnection connection)
         {
             ValidateConnection(connection);
             _connections.Add(connection);
-            connection.StatusChanged += TryChangeState;
         }
 
-        public bool CanConnect() => 
+        public bool HasFreeSlots() => 
             ReadyPlayersCount < MaxPlayers;
 
         public bool CanUseChat(IPlayer player) => 
             _state.CanUseChat(player);
+
+        public void MakeReady(Player player)
+        {
+            if (!HasPlayer(player))
+                throw new InvalidOperationException();
+            
+            if (!HasFreeSlots())
+                throw new InvalidOperationException();
+
+            LobbyConnection connection = _connections.Find(x => x.Player == player);
+            connection.MakeReady();
+            TryChangeState();
+        }
+
+        public bool HasPlayer(IPlayer player) => 
+            _connections.Any(x => x.Player == player);
 
         public void PrintMessage(string message, IPlayer player)
         {
@@ -56,16 +70,13 @@ namespace Source
             return messages;
         }
 
-        public bool HasPlayer(IPlayer player) => 
-            _connections.Any(x => x.Player == player);
-
         private void TryChangeState()
         {
-            if (!CanConnect())
+            if (!HasFreeSlots())
                 ChangeState();
         }
-        
-        
+
+
         private void ChangeState() => 
             _state = new GameState(this, ReadyPlayers);
 
@@ -74,7 +85,7 @@ namespace Source
             if (connection == null)
                 throw new ArgumentException();
 
-            if (!CanConnect())
+            if (!HasFreeSlots())
                 throw new InvalidOperationException();
         }
 
