@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -10,13 +11,22 @@ namespace GameLobby
 
         public IReadOnlyList<Message> Messages => _messages;
 
-        public void Add(string message, IPlayer player)
+        public void Add(string message, string author)
         {
+            ValidateString(message);
+            ValidateString(author);
+
             _messagesCount++;
-            _messages.Add(new Message(_messagesCount, message, player.Name));
+            _messages.Add(new Message(_messagesCount, message, author));
         }
 
-        public IEnumerable<Message> LoadSince(int lastMessageId) => 
+        public IEnumerable<Message> LoadSince(int lastMessageId) =>
             _messages.SkipWhile(x => x.Id <= lastMessageId);
+
+        private void ValidateString(string message)
+        {
+            if (string.IsNullOrWhiteSpace(message))
+                throw new ArgumentNullException();
+        }
     }
 }

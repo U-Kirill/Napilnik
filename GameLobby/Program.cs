@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using GameLobby.Rooms;
 
 namespace GameLobby
@@ -8,63 +7,62 @@ namespace GameLobby
   {
     public static void Main()
     {
+      // Use case for a simpler understanding
       Game game = new Game();
       ILobby lobby = game.Create(2);
-      Player player1 = new Player("player 1", new ConsoleMessageView("Read from player 1"));
-      
-      Console.WriteLine($"can connect {lobby.HasFreeSlots()}");
-      if(lobby.HasFreeSlots())
-      game.Connect(player1, lobby);
-      Console.WriteLine($"ReadyPlayersCount {lobby.ReadyPlayersCount}");
-      player1.MakeReady();
-      Console.WriteLine($"ReadyPlayersCount {lobby.ReadyPlayersCount}");
-      //player1.Connection.ChatUpdated += () => player1.GetUnreadMessage().ToList().ForEach(x => Console.WriteLine($"reactivity: [{x.Id}] - {x.Author}: {x.Text}"));
-      player1.PrintMessage("Hello from player 1");
-      player1.PrintMessage("What's up");
 
-      var player2 = new Player("player 2", new ConsoleMessageView("Read from player 2"));
-      game.Connect(player2, lobby);
-      Console.WriteLine("How player 2 sees a chat:");
-      //player2.GetUnreadMessage().ToList().ForEach(x => Console.WriteLine($"[{x.Id}] - {x.Author}: {x.Text}"));
+      Player igor = new Player("Igor", new ConsoleMessageView("Igor see"));
+      Player valera = new Player("Valera", new ConsoleMessageView("Valera see"));
+      Player anatoliy = new Player("Anatoliy", new ConsoleMessageView("Anatoliy see"));
 
-      var player3 = new Player("player 3", new ConsoleMessageView("Read from player 3"));
-      if(lobby.HasFreeSlots())
-      game.Connect(player3, lobby);
-      player3.PrintMessage("Hello from player 3");
-      
-      var player4 = new Player("player 4", new ConsoleMessageView("Read from player 4"));
-      if(lobby.HasFreeSlots())
-      game.Connect(player4, lobby);
-      if (player4.CanUseChat())
-      player4.PrintMessage("Hello from player 4");
-      
-      Console.WriteLine("How player 4 sees a chat:");
-      //if (player4.CanUseChat())
-      //player4.GetUnreadMessage().ToList().ForEach(x => Console.WriteLine($"[{x.Id}] - {x.Author}: {x.Text}"));
+      TryConnect(lobby, game, igor); // will
+      TryConnect(lobby, game, valera); // will
+      TryConnect(lobby, game, anatoliy); // will
 
-      Console.WriteLine($"Try What's up from 4");
-      if (player4.CanUseChat())
-        player4.PrintMessage("What's up from 4");
+      igor.SendMessage("Hello! Set ready, Valera");
+      TryMakeReady(igor); // ok 1/2
 
-      Console.WriteLine($"make ready");
-      player2.MakeReady();
+      valera.SendMessage("Hi, Igor! One moment..");
 
-      Console.WriteLine($"Try What's up from 4");
-      if (player4.CanUseChat())
-        player4.PrintMessage("What's up from 4");
+      // a few hours later
+      TryMakeReady(valera); // ok 2/2 - game state
+      valera.SendMessage("Yes, i'm ready. Lets play.");
 
-      Console.WriteLine($"Try print from 1 and read from 4");
-      player1.PrintMessage("Hello from player 1");
-      //if (player4.CanUseChat())
-       // player4.GetUnreadMessage().ToList().ForEach(x => Console.WriteLine($"[{x.Id}] - {x.Author}: {x.Text}"));
+      if (anatoliy.CanUseChat()) // false
+        anatoliy.SendMessage("Hi, bodies ;)"); // will not send.
 
-      Console.WriteLine($"Try print from 1 and read from 2");
-      player1.PrintMessage("Hello from player 1");
-      //player2.GetUnreadMessage().ToList().ForEach(x => Console.WriteLine($"[{x.Id}] - {x.Author}: {x.Text}"));
-      var player5 = new Player("player 5", new ConsoleMessageView("Read from player 5"));
-      if(lobby.HasFreeSlots())
-        game.Connect(player5, lobby);
+      TryMakeReady(anatoliy); // nope. lobby has max ready players
+
       Console.ReadLine();
     }
+
+    private static void TryMakeReady(Player player)
+    {
+      if (player.CanMakeReady())
+        player.MakeReady();
+    }
+
+    // poor method for demo only
+    private static void TryConnect(ILobby lobby, Game game, Player player)
+    {
+      if (lobby.HasFreeSlots())
+        game.Connect(player, lobby);
+    }
+
+    /*
+      Igor see: [1] - Igor: Hello! Set ready, Valera
+      Valera see: [1] - Igor: Hello! Set ready, Valera
+      Anatoliy see: [1] - Igor: Hello! Set ready, Valera
+
+      Igor see: [2] - Valera: Hi, Igor! One moment..
+      Valera see: [2] - Valera: Hi, Igor! One moment..
+      Anatoliy see: [2] - Valera: Hi, Igor! One moment..
+
+      Igor see: [3] - Server: Game Started!
+      Valera see: [3] - Server: Game Started!
+
+      Igor see: [4] - Valera: Yes, i'm ready. Lets play.
+      Valera see: [4] - Valera: Yes, i'm ready. Lets play.
+     */
   }
 }

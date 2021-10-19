@@ -23,11 +23,26 @@ namespace GameLobby
 
         public string Name { get; }
 
+        public bool IsConnected => _connection != null;
+
         public void Connect(ILobbyConnection connection)
         {
+            if (IsConnected)
+                throw new InvalidOperationException();
+
             _connection = connection;
             _connection.ChatUpdated += ShowMessage;
             ShowMessage();
+        }
+
+        public bool CanMakeReady()
+        {
+            ValidateConnect();
+
+            var command = new CanMakeReadyCommand();
+            _connection.ApplyCommand(command);
+            return command.Result;
+
         }
 
         public void MakeReady()
@@ -39,12 +54,13 @@ namespace GameLobby
         public bool CanUseChat()
         {
             ValidateConnect();
-            CanUseChatCommand command = new CanUseChatCommand();
+
+            var command = new CanUseChatCommand();
             _connection.ApplyCommand(command);
             return command.Result;
         }
 
-        public void PrintMessage(string message)
+        public void SendMessage(string message)
         {
             ValidateConnect();
             _connection.ApplyCommand(new PrintMessageCommand(message));
@@ -58,7 +74,7 @@ namespace GameLobby
 
         private void ValidateConnect()
         {
-            if (_connection == null)
+            if (!IsConnected)
                 throw new InvalidOperationException();
         }
 

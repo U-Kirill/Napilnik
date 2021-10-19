@@ -54,8 +54,7 @@ namespace GameLobby.Rooms
             if (!CanUseChat(player))
                 throw new InvalidOperationException();
 
-            _chat.Add(message, player);
-            _state.Notify();
+            AddMessage(message, player.Name);
         }
 
         public IEnumerable<Message> LoadMessage(int lastMessageId, IPlayer player)
@@ -83,8 +82,17 @@ namespace GameLobby.Rooms
                 ChangeState();
         }
 
-        private void ChangeState() => 
+        private void ChangeState()
+        {
             _state = new GameState(this, ReadyPlayers);
+            AddMessage("Game Started!", "Server");
+        }
+
+        private void AddMessage(string message, string author)
+        {
+            _chat.Add(message, author);
+            _state.Notify();
+        }
 
         private void ValidatePlayer(IPlayer player)
         {
