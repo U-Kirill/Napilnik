@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace Source
@@ -20,8 +19,8 @@ namespace Source
 
         public LobbyConnection(Player player, Lobby lobby)
         {
-            _player = player;
-            _lobby = lobby;
+            _player = player ?? throw new ArgumentNullException();
+            _lobby = lobby ?? throw new ArgumentNullException();
         }
 
         public event Action ChatUpdated;
@@ -30,65 +29,18 @@ namespace Source
 
         public IPlayer Player => _player;
 
-        public void ApplyCommand(ILobbyCommand command)
-        {
+        public void ApplyCommand(ILobbyCommand command) =>
             command.Execute(_player, _lobby);
-        }
 
-        public void OnChatUpdate() => 
+        public void OnChatUpdate() =>
             ChatUpdated?.Invoke();
 
-        public void MakeReady() => 
+        public void MakeReady()
+        {
+            if (IsPlayerReady)
+                throw new InvalidOperationException();
+
             IsPlayerReady = true;
-    }
-
-    public interface ILobbyCommand
-    {
-        void Execute(Player player, Lobby lobby);
-    }
-    
-    public interface IReturnableLobbyCommand<T> : ILobbyCommand
-    {
-        T Result { get; }
-    }
-
-    public class CanUseChatCommand : IReturnableLobbyCommand<bool>
-    {
-        public bool Result { get; private set; }
-
-        public void Execute(Player player, Lobby lobby)
-        {
-            Result = lobby.CanUseChat(player);
         }
-    }
-    
-    public class GetUnreadedMessagesCommand : IReturnableLobbyCommand<IEnumerable<Message>>
-    {
-        private int _lastMessageId;
-
-        public GetUnreadedMessagesCommand(int lastMessageId)
-        {
-            _lastMessageId = lastMessageId;
-        }
-
-        public IEnumerable<Message> Result { get; private set; }
-
-        public void Execute(Player player, Lobby lobby)
-        {
-            Result = lobby.LoadMessage(_lastMessageId,player);
-        }
-    }
-
-    public class PrintMessageCommand : ILobbyCommand
-    {
-        private string _message;
-
-        public PrintMessageCommand(string message)
-        {
-            _message = message;
-        }
-
-        public void Execute(Player player, Lobby lobby) => 
-            lobby.PrintMessage(_message, player);
     }
 }

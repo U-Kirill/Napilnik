@@ -7,13 +7,16 @@ namespace Source
 {
     public class Lobby : ILobby
     {
-        private State _state;
-
         private readonly List<LobbyConnection> _connections = new List<LobbyConnection>();
         private readonly Chat _chat = new Chat();
 
+        private State _state;
+
         public Lobby(int maxPlayers)
         {
+            if (maxPlayers < 1)
+                throw new ArgumentOutOfRangeException();
+
             MaxPlayers = maxPlayers;
             _state = new WaitingState(this);
         }
@@ -30,9 +33,6 @@ namespace Source
             _connections.Add(connection);
         }
 
-        public bool HasFreeSlots() =>
-            ReadyPlayersCount < MaxPlayers;
-
         public void MakeReady(Player player)
         {
             ValidatePlayer(player);
@@ -45,14 +45,8 @@ namespace Source
             TryChangeState();
         }
 
-        public bool HasPlayer(IPlayer player) => 
-            _connections.Any(x => x.Player == player);
-
-        public bool CanUseChat(IPlayer player)
-        {
-            ValidatePlayer(player);
-            return _state.CanUseChat(player);
-        }
+        public bool HasFreeSlots() =>
+            ReadyPlayersCount < MaxPlayers;
 
         public void PrintMessage(string message, IPlayer player)
         {
@@ -74,6 +68,15 @@ namespace Source
 
             return _chat.LoadSince(lastMessageId);
         }
+
+        public bool CanUseChat(IPlayer player)
+        {
+            ValidatePlayer(player);
+            return _state.CanUseChat(player);
+        }
+
+        public bool HasPlayer(IPlayer player) => 
+            _connections.Any(x => x.Player == player);
 
         private void TryChangeState()
         {
@@ -110,40 +113,19 @@ namespace Source
 
             public void Notify()
             {
-                IEnumerable<LobbyConnection> lobbyConnections = GetConnectionsForNotify(_lobby._connections);
+                IEnumerable<LobbyConnection> activeConnections = GetActiveConnections(_lobby._connections);
 
-                foreach (LobbyConnection lobbyConnection in lobbyConnections)
+                foreach (LobbyConnection lobbyConnection in activeConnections)
                     lobbyConnection.OnChatUpdate();
             }
 
             public bool CanUseChat(IPlayer player)
             {
-                IEnumerable<LobbyConnection> lobbyConnections = GetConnectionsForNotify(_lobby._connections);
-                return lobbyConnections.Any(x => x.Player == player);
+                IEnumerable<LobbyConnection> activeConnections = GetActiveConnections(_lobby._connections);
+                return activeConnections.Any(x => x.Player == player);
             }
 
-            protected abstract IEnumerable<LobbyConnection> GetConnectionsForNotify(IEnumerable<LobbyConnection> allConnections);
+            protected abstract IEnumerable<LobbyConnection> GetActiveConnections(IEnumerable<LobbyConnection> allConnections);
         }
-    }
-
-    internal class GameState : Lobby.State
-    {
-        private readonly IEnumerable<LobbyConnection> _readyPlayers;
-
-        public GameState(Lobby lobby, IEnumerable<LobbyConnection> readyPlayers) : base(lobby) => 
-            _readyPlayers = readyPlayers;
-
-        protected override IEnumerable<LobbyConnection> GetConnectionsForNotify(IEnumerable<LobbyConnection> allConnections) => 
-            _readyPlayers;
-    }
-
-    internal class WaitingState : Lobby.State
-    {
-        public WaitingState(Lobby lobby) : base(lobby)
-        {
-        }
-
-        protected override IEnumerable<LobbyConnection> GetConnectionsForNotify(IEnumerable<LobbyConnection> allConnections) => 
-            allConnections;
     }
 }

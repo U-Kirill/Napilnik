@@ -6,15 +6,18 @@ namespace Source
 {
     public class Player : IPlayer
     {
-        private ILobbyConnection _connection;
-        private int _lastMessageId;
-        
         private readonly IMessageView _messageView;
 
-        public Player(string name, IMessageView _messageView)
+        private ILobbyConnection _connection;
+        private int _lastMessageId;
+
+        public Player(string name, IMessageView messageView)
         {
-            this._messageView = _messageView;
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentNullException();
+
             Name = name;
+            _messageView = messageView ?? throw new ArgumentNullException();
         }
 
         public string Name { get; }
@@ -26,21 +29,37 @@ namespace Source
             ShowMessage();
         }
 
-        public void MakeReady() => 
+        public void MakeReady()
+        {
+            ValidateConnect();
             _connection.ApplyCommand(new ReadyCommand());
+        }
 
         public bool CanUseChat()
         {
+            ValidateConnect();
             CanUseChatCommand command = new CanUseChatCommand();
             _connection.ApplyCommand(command);
             return command.Result;
         }
 
-        public void PrintMessage(string message) => 
+        public void PrintMessage(string message)
+        {
+            ValidateConnect();
             _connection.ApplyCommand(new PrintMessageCommand(message));
+        }
 
-        private void ShowMessage() => 
+        private void ShowMessage()
+        {
+            ValidateConnect();
             GetUnreadMessage().ToList().ForEach(x => _messageView.Show(x));
+        }
+
+        private void ValidateConnect()
+        {
+            if (_connection == null)
+                throw new InvalidOperationException();
+        }
 
         private IEnumerable<Message> GetUnreadMessage()
         {
@@ -62,32 +81,6 @@ namespace Source
             Message last = messages.LastOrDefault();
             if (last != null)
                 _lastMessageId = last.Id;
-        }
-    }
-
-    public interface IMessageView
-    {
-        void Show(Message message);
-    }
-    
-
-    public class ConsoleMessageView : IMessageView
-    {
-        private readonly string _title;
-
-        public ConsoleMessageView()
-        {
-            _title = String.Empty;
-        }
-
-        public ConsoleMessageView(string title)
-        {
-            _title = title + ": ";
-        }
-        
-        public void Show(Message message)
-        {
-            Console.WriteLine($"{_title}{message}");
         }
     }
 }

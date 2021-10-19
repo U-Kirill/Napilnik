@@ -12,6 +12,7 @@ namespace Source
       Player player1 = new Player("player 1", new ConsoleMessageView("Read from player 1"));
       
       Console.WriteLine($"can connect {lobby.HasFreeSlots()}");
+      if(lobby.HasFreeSlots())
       game.Connect(player1, lobby);
       Console.WriteLine($"ReadyPlayersCount {lobby.ReadyPlayersCount}");
       player1.MakeReady();
@@ -26,10 +27,12 @@ namespace Source
       //player2.GetUnreadMessage().ToList().ForEach(x => Console.WriteLine($"[{x.Id}] - {x.Author}: {x.Text}"));
 
       var player3 = new Player("player 3", new ConsoleMessageView("Read from player 3"));
+      if(lobby.HasFreeSlots())
       game.Connect(player3, lobby);
       player3.PrintMessage("Hello from player 3");
       
       var player4 = new Player("player 4", new ConsoleMessageView("Read from player 4"));
+      if(lobby.HasFreeSlots())
       game.Connect(player4, lobby);
       if (player4.CanUseChat())
       player4.PrintMessage("Hello from player 4");
@@ -57,21 +60,10 @@ namespace Source
       Console.WriteLine($"Try print from 1 and read from 2");
       player1.PrintMessage("Hello from player 1");
       //player2.GetUnreadMessage().ToList().ForEach(x => Console.WriteLine($"[{x.Id}] - {x.Author}: {x.Text}"));
-
+      var player5 = new Player("player 5", new ConsoleMessageView("Read from player 5"));
+      if(lobby.HasFreeSlots())
+        game.Connect(player5, lobby);
       Console.ReadLine();
     }
-  }
-
-  public interface ILobby
-  {
-    int MaxPlayers { get; }
-    int ReadyPlayersCount { get; }
-    bool HasFreeSlots();
-  }
-
-  
-  public interface IPlayer
-  {
-    string Name { get; }
   }
 }
