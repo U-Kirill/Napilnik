@@ -111,7 +111,7 @@ namespace GameLobby.Rooms
 
         public abstract class State
         {
-            private Lobby _lobby;
+            private readonly Lobby _lobby;
 
             protected State(Lobby lobby)
             {
