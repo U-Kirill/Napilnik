@@ -30,17 +30,13 @@ namespace Source
             _connections.Add(connection);
         }
 
-        public bool HasFreeSlots() => 
+        public bool HasFreeSlots() =>
             ReadyPlayersCount < MaxPlayers;
-
-        public bool CanUseChat(IPlayer player) => 
-            _state.CanUseChat(player);
 
         public void MakeReady(Player player)
         {
-            if (!HasPlayer(player))
-                throw new InvalidOperationException();
-            
+            ValidatePlayer(player);
+
             if (!HasFreeSlots())
                 throw new InvalidOperationException();
 
@@ -52,22 +48,31 @@ namespace Source
         public bool HasPlayer(IPlayer player) => 
             _connections.Any(x => x.Player == player);
 
+        public bool CanUseChat(IPlayer player)
+        {
+            ValidatePlayer(player);
+            return _state.CanUseChat(player);
+        }
+
         public void PrintMessage(string message, IPlayer player)
         {
-            if (CanUseChat(player))
-                _chat.Add(message, player);
-            
+            ValidatePlayer(player);
+
+            if (!CanUseChat(player))
+                throw new InvalidOperationException();
+
+            _chat.Add(message, player);
             _state.Notify();
         }
 
         public IEnumerable<Message> LoadMessage(int lastMessageId, IPlayer player)
         {
-            IEnumerable<Message> messages = Array.Empty<Message>();
-            
-            if (CanUseChat(player))
-                messages = _chat.LoadSince(lastMessageId);
-            
-            return messages;
+            ValidatePlayer(player);
+
+            if (!CanUseChat(player))
+                throw new InvalidOperationException();
+
+            return _chat.LoadSince(lastMessageId);
         }
 
         private void TryChangeState()
@@ -76,9 +81,14 @@ namespace Source
                 ChangeState();
         }
 
-
         private void ChangeState() => 
             _state = new GameState(this, ReadyPlayers);
+
+        private void ValidatePlayer(IPlayer player)
+        {
+            if (!HasPlayer(player))
+                throw new InvalidOperationException();
+        }
 
         private void ValidateConnection(LobbyConnection connection)
         {
