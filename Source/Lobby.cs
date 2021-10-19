@@ -35,6 +35,9 @@ namespace Source
         public bool CanConnect() => 
             ReadyPlayersCount < MaxPlayers;
 
+        public bool CanUseChat(IPlayer player) => 
+            _state.CanUseChat(player);
+
         public void PrintMessage(string message, IPlayer player)
         {
             if (CanUseChat(player))
@@ -42,9 +45,6 @@ namespace Source
             
             _state.Notify();
         }
-
-        public bool CanUseChat(IPlayer player) => 
-            _state.CanUseChat(player);
 
         public IEnumerable<Message> LoadMessage(int lastMessageId, IPlayer player)
         {

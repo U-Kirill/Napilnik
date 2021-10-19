@@ -15,8 +15,9 @@ namespace Source
 
     public class LobbyConnection : ILobbyConnection
     {
-        private readonly Lobby Lobby;
         private int _lastMessageID;
+        
+        private readonly Lobby Lobby;
         private readonly Player _player;
 
         public LobbyConnection(Player player, Lobby lobby)
@@ -27,35 +28,30 @@ namespace Source
         }
 
         public event Action ChatUpdated;
+        
         public event Action StatusChanged;
 
         public bool IsPlayerReady => _player.IsReady;
 
         public IPlayer Player => _player;
 
-        public void PrintMessage(string message) => 
+        public void PrintMessage(string message) =>
             Lobby.PrintMessage(message, Player);
 
-        public bool CanUseChat()
-        {
-            return Lobby.CanUseChat(Player);
-        }
+        public bool CanUseChat() => 
+            Lobby.CanUseChat(Player);
+
+        public void OnChatUpdate() => 
+            ChatUpdated?.Invoke();
+
+        private void OnPlayerChangeStatus() => 
+            StatusChanged?.Invoke();
 
         public IEnumerable<Message> ReadLastMessage()
         {
             IEnumerable<Message> messages = Lobby.LoadMessage(_lastMessageID, Player).ToArray();
             UpdateLastMessageId(messages);
             return messages;
-        }
-
-        public void OnChatUpdate()
-        {
-            ChatUpdated?.Invoke();
-        }
-
-        private void OnPlayerChangeStatus()
-        {
-            StatusChanged?.Invoke();
         }
 
         private void UpdateLastMessageId(IEnumerable<Message> messages)
