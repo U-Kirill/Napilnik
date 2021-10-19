@@ -23,7 +23,7 @@ namespace Source
       var player2 = new Player("player 2", new ConsoleMessageView("Read from player 2"));
       game.Connect(player2, lobby);
       Console.WriteLine("How player 2 sees a chat:");
-      player2.GetUnreadMessage().ToList().ForEach(x => Console.WriteLine($"[{x.Id}] - {x.Author}: {x.Text}"));
+      //player2.GetUnreadMessage().ToList().ForEach(x => Console.WriteLine($"[{x.Id}] - {x.Author}: {x.Text}"));
 
       var player3 = new Player("player 3", new ConsoleMessageView("Read from player 3"));
       game.Connect(player3, lobby);
@@ -36,7 +36,7 @@ namespace Source
       
       Console.WriteLine("How player 4 sees a chat:");
       //if (player4.CanUseChat())
-      player4.GetUnreadMessage().ToList().ForEach(x => Console.WriteLine($"[{x.Id}] - {x.Author}: {x.Text}"));
+      //player4.GetUnreadMessage().ToList().ForEach(x => Console.WriteLine($"[{x.Id}] - {x.Author}: {x.Text}"));
 
       Console.WriteLine($"Try What's up from 4");
       if (player4.CanUseChat())
@@ -51,12 +51,12 @@ namespace Source
 
       Console.WriteLine($"Try print from 1 and read from 4");
       player1.PrintMessage("Hello from player 1");
-      if (player4.CanUseChat())
-        player4.GetUnreadMessage().ToList().ForEach(x => Console.WriteLine($"[{x.Id}] - {x.Author}: {x.Text}"));
+      //if (player4.CanUseChat())
+       // player4.GetUnreadMessage().ToList().ForEach(x => Console.WriteLine($"[{x.Id}] - {x.Author}: {x.Text}"));
 
       Console.WriteLine($"Try print from 1 and read from 2");
       player1.PrintMessage("Hello from player 1");
-      player2.GetUnreadMessage().ToList().ForEach(x => Console.WriteLine($"[{x.Id}] - {x.Author}: {x.Text}"));
+      //player2.GetUnreadMessage().ToList().ForEach(x => Console.WriteLine($"[{x.Id}] - {x.Author}: {x.Text}"));
 
       Console.ReadLine();
     }

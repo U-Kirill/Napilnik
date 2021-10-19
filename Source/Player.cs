@@ -23,12 +23,11 @@ namespace Source
         {
             _connection = connection;
             _connection.ChatUpdated += ShowMessage;
+            ShowMessage();
         }
 
-        public void MakeReady()
-        {
+        public void MakeReady() => 
             _connection.ApplyCommand(new ReadyCommand());
-        }
 
         public bool CanUseChat()
         {
@@ -37,12 +36,13 @@ namespace Source
             return command.Result;
         }
 
-        public void PrintMessage(string message)
-        {
+        public void PrintMessage(string message) => 
             _connection.ApplyCommand(new PrintMessageCommand(message));
-        }
 
-        public IEnumerable<Message> GetUnreadMessage()
+        private void ShowMessage() => 
+            GetUnreadMessage().ToList().ForEach(x => _messageView.Show(x));
+
+        private IEnumerable<Message> GetUnreadMessage()
         {
             IEnumerable<Message> messages = ReceiveUnreadMessages().ToArray();
             TryRefreshLastMessageId(messages);
@@ -56,9 +56,6 @@ namespace Source
             IEnumerable<Message> messages = command.Result;
             return messages;
         }
-
-        private void ShowMessage() => 
-            GetUnreadMessage().ToList().ForEach(x => _messageView.Show(x));
 
         private void TryRefreshLastMessageId(IEnumerable<Message> messages)
         {
@@ -91,14 +88,6 @@ namespace Source
         public void Show(Message message)
         {
             Console.WriteLine($"{_title}{message}");
-        }
-    }
-
-    public class ReadyCommand : ILobbyCommand
-    {
-        public void Execute(Player player, Lobby lobby)
-        {
-            lobby.MakeReady(player);
         }
     }
 }
