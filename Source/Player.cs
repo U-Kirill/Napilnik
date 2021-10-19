@@ -9,15 +9,15 @@ namespace Source
         private ILobbyConnection _connection;
         private int _lastMessageId;
         
+        private readonly IMessageView _messageView;
 
-        public bool IsReady => _connection.IsPlayerReady;
-
-        public string Name { get; }
-
-        public Player(string name)
+        public Player(string name, IMessageView _messageView)
         {
+            this._messageView = _messageView;
             Name = name;
         }
+
+        public string Name { get; }
 
         public void Connect(ILobbyConnection connection)
         {
@@ -58,13 +58,39 @@ namespace Source
         }
 
         private void ShowMessage() => 
-            GetUnreadMessage().ToList().ForEach(x => Console.WriteLine($"{Name} see: {x}"));
+            GetUnreadMessage().ToList().ForEach(x => _messageView.Show(x));
 
         private void TryRefreshLastMessageId(IEnumerable<Message> messages)
         {
             Message last = messages.LastOrDefault();
             if (last != null)
                 _lastMessageId = last.Id;
+        }
+    }
+
+    public interface IMessageView
+    {
+        void Show(Message message);
+    }
+    
+
+    public class ConsoleMessageView : IMessageView
+    {
+        private readonly string _title;
+
+        public ConsoleMessageView()
+        {
+            _title = String.Empty;
+        }
+
+        public ConsoleMessageView(string title)
+        {
+            _title = title + ": ";
+        }
+        
+        public void Show(Message message)
+        {
+            Console.WriteLine($"{_title}{message}");
         }
     }
 
