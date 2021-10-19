@@ -42,7 +42,6 @@ namespace GameLobby
             var command = new CanMakeReadyCommand();
             _connection.ApplyCommand(command);
             return command.Result;
-
         }
 
         public void MakeReady()
@@ -87,7 +86,7 @@ namespace GameLobby
 
         private IEnumerable<Message> ReceiveUnreadMessages()
         {
-            var command = new GetUnreadedMessagesCommand(_lastMessageId);
+            var command = new GetUnreadMessagesCommand(_lastMessageId);
             _connection.ApplyCommand(command);
             IEnumerable<Message> messages = command.Result;
             return messages;

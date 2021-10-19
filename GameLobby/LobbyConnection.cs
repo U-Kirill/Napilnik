@@ -1,19 +1,9 @@
 using System;
-using System.Linq;
 using GameLobby.Commands.Abstractions;
 using GameLobby.Rooms;
 
 namespace GameLobby
 {
-    public interface ILobbyConnection
-    {
-        event Action ChatUpdated;
-
-        bool IsPlayerReady { get; }
-
-        void ApplyCommand(ILobbyCommand command);
-    }
-
     public class LobbyConnection : ILobbyConnection
     {
         private readonly Lobby _lobby;

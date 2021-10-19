@@ -33,13 +33,13 @@ namespace GameLobby
             return lobby;
         }
 
-        private bool IsAnyLobbiesHas(Player player) => 
+        private bool IsAnyLobbiesHas(Player player) =>
             _lobbies.Any(x => x.HasPlayer(player));
 
-        private bool HasLobby(ILobby lobby) => 
+        private bool HasLobby(ILobby lobby) =>
             GetLobby(lobby) != null;
 
-        private Lobby GetLobby(ILobby lobby) => 
+        private Lobby GetLobby(ILobby lobby) =>
             _lobbies.Find(x => x == lobby);
     }
 }

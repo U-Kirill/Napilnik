@@ -73,7 +73,7 @@ namespace GameLobby.Rooms
             return _state.CanUseChat(player);
         }
 
-        public bool HasPlayer(IPlayer player) => 
+        public bool HasPlayer(IPlayer player) =>
             _connections.Any(x => x.Player == player);
 
         private void TryChangeState()

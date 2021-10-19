@@ -12,7 +12,7 @@ namespace GameLobby.Commands
             _message = message;
         }
 
-        public void Execute(Player player, Lobby lobby) => 
+        public void Execute(Player player, Lobby lobby) =>
             lobby.PrintMessage(_message, player);
     }
 }

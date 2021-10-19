@@ -8,7 +8,7 @@ namespace GameLobby.Rooms
         {
         }
 
-        protected override IEnumerable<LobbyConnection> GetActiveConnections(IEnumerable<LobbyConnection> allConnections) => 
+        protected override IEnumerable<LobbyConnection> GetActiveConnections(IEnumerable<LobbyConnection> allConnections) =>
             allConnections;
     }
 }

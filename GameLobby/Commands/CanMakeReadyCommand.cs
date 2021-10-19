@@ -1,7 +1,7 @@
 using GameLobby.Commands.Abstractions;
 using GameLobby.Rooms;
 
-namespace GameLobby
+namespace GameLobby.Commands
 {
     public class CanMakeReadyCommand : IReturnableLobbyCommand<bool>
     {

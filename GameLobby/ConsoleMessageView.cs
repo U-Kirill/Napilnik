@@ -8,7 +8,7 @@ namespace GameLobby
 
         public ConsoleMessageView()
         {
-            _title = String.Empty;
+            _title = string.Empty;
         }
 
         public ConsoleMessageView(string title)
@@ -16,7 +16,7 @@ namespace GameLobby
             _title = title + ": ";
         }
 
-        public void Show(Message message) => 
+        public void Show(Message message) =>
             Console.WriteLine($"{_title}{message}");
     }
 }

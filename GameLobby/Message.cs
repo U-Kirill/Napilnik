@@ -10,14 +10,12 @@ namespace GameLobby
         }
 
         public int Id { get; }
-        
+
         public string Text { get; }
 
         public string Author { get; }
 
-        public override string ToString()
-        {
-            return $"[{Id}] - {Author}: {Text}";
-        }
+        public override string ToString() =>
+            $"[{Id}] - {Author}: {Text}";
     }
 }

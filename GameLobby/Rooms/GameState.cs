@@ -6,10 +6,14 @@ namespace GameLobby.Rooms
     {
         private readonly IEnumerable<LobbyConnection> _readyPlayers;
 
-        public GameState(Lobby lobby, IEnumerable<LobbyConnection> readyPlayers) : base(lobby) => 
+        public GameState(Lobby lobby, IEnumerable<LobbyConnection> readyPlayers) : base(lobby)
+        {
             _readyPlayers = readyPlayers;
+        }
 
-        protected override IEnumerable<LobbyConnection> GetActiveConnections(IEnumerable<LobbyConnection> allConnections) => 
-            _readyPlayers;
+        protected override IEnumerable<LobbyConnection> GetActiveConnections(IEnumerable<LobbyConnection> allConnections)
+        {
+            return _readyPlayers;
+        }
     }
 }

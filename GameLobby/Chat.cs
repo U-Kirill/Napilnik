@@ -7,7 +7,7 @@ namespace GameLobby
     public class Chat
     {
         private readonly List<Message> _messages = new List<Message>();
-        private int _messagesCount = 0;
+        private int _messagesCount;
 
         public IReadOnlyList<Message> Messages => _messages;
 
