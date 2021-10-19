@@ -31,23 +31,28 @@ namespace Source
       
       var player4 = new Player("player 4");
       game.Connect(player4, lobby);
+      if (player4.CanUseChat())
       player4.PrintMessage("Hello from player 4");
       
       Console.WriteLine("How player 4 sees a chat:");
+      if (player4.CanUseChat())
       player4.GetUnreadMessage().ToList().ForEach(x => Console.WriteLine($"[{x.Id}] - {x.Author}: {x.Text}"));
 
       Console.WriteLine($"Try What's up from 4");
-      player4.PrintMessage("What's up from 4");
+      if (player4.CanUseChat())
+        player4.PrintMessage("What's up from 4");
 
       Console.WriteLine($"make ready");
       player2.MakeReady();
       
       Console.WriteLine($"Try What's up from 4");
-      player4.PrintMessage("What's up from 4");
+      if (player4.CanUseChat())
+        player4.PrintMessage("What's up from 4");
       
       Console.WriteLine($"Try print from 1 and read from 4");
       player1.PrintMessage("Hello from player 1");
-      player4.GetUnreadMessage().ToList().ForEach(x => Console.WriteLine($"[{x.Id}] - {x.Author}: {x.Text}"));
+      if (player4.CanUseChat())
+        player4.GetUnreadMessage().ToList().ForEach(x => Console.WriteLine($"[{x.Id}] - {x.Author}: {x.Text}"));
       
       Console.WriteLine($"Try print from 1 and read from 2");
       player1.PrintMessage("Hello from player 1");
