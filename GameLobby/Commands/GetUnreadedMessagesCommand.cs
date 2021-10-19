@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using GameLobby.Commands.Abstractions;
+using GameLobby.Rooms;
 
-namespace Source
+namespace GameLobby.Commands
 {
     public class GetUnreadedMessagesCommand : IReturnableLobbyCommand<IEnumerable<Message>>
     {

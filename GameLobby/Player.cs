@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using GameLobby.Commands;
 
-namespace Source
+namespace GameLobby
 {
     public class Player : IPlayer
     {

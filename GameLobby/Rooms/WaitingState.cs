@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Source
+namespace GameLobby.Rooms
 {
     internal class WaitingState : Lobby.State
     {

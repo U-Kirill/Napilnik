@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Source
+namespace GameLobby
 {
     public class Chat
     {

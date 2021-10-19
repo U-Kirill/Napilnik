@@ -1,4 +1,6 @@
-namespace Source
+using GameLobby.Rooms;
+
+namespace GameLobby.Commands.Abstractions
 {
     public interface ILobbyCommand
     {

@@ -1,7 +1,9 @@
 using System;
 using System.Linq;
+using GameLobby.Commands.Abstractions;
+using GameLobby.Rooms;
 
-namespace Source
+namespace GameLobby
 {
     public interface ILobbyConnection
     {

@@ -1,4 +1,4 @@
-namespace Source
+namespace GameLobby
 {
     public interface IMessageView
     {

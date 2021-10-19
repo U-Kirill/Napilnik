@@ -1,4 +1,7 @@
-namespace Source
+using GameLobby.Commands.Abstractions;
+using GameLobby.Rooms;
+
+namespace GameLobby.Commands
 {
     public class CanUseChatCommand : IReturnableLobbyCommand<bool>
     {

@@ -1,4 +1,4 @@
-namespace Source
+namespace GameLobby.Commands.Abstractions
 {
     public interface IReturnableLobbyCommand<T> : ILobbyCommand
     {

@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using GameLobby.Rooms;
 
-namespace Source
+namespace GameLobby
 {
     public class Game
     {
