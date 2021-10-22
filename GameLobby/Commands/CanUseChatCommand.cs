@@ -7,9 +7,7 @@ namespace GameLobby.Commands
     {
         public bool Result { get; private set; }
 
-        public void Execute(Player player, Lobby lobby)
-        {
+        public void Execute(Player player, Lobby lobby) => 
             Result = lobby.CanUseChat(player);
-        }
     }
 }

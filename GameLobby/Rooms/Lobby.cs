@@ -115,7 +115,7 @@ namespace GameLobby.Rooms
 
             protected State(Lobby lobby)
             {
-                _lobby = lobby;
+                _lobby = lobby ?? throw new ArgumentNullException(nameof(lobby));
             }
 
             public void Notify()

@@ -11,8 +11,8 @@ namespace GameLobby
 
         public LobbyConnection(Player player, Lobby lobby)
         {
-            _player = player ?? throw new ArgumentNullException();
-            _lobby = lobby ?? throw new ArgumentNullException();
+            _player = player ?? throw new ArgumentNullException(nameof(player));
+            _lobby = lobby ?? throw new ArgumentNullException(nameof(lobby));
         }
 
         public event Action ChatUpdated;
@@ -30,7 +30,7 @@ namespace GameLobby
         public void MakeReady()
         {
             if (IsPlayerReady)
-                throw new InvalidOperationException();
+                throw new InvalidOperationException("Player already ready");
 
             IsPlayerReady = true;
         }

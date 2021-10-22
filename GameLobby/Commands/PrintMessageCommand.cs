@@ -5,7 +5,7 @@ namespace GameLobby.Commands
 {
     public class PrintMessageCommand : ILobbyCommand
     {
-        private string _message;
+        private readonly string _message;
 
         public PrintMessageCommand(string message)
         {

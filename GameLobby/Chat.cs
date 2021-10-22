@@ -13,8 +13,11 @@ namespace GameLobby
 
         public void Add(string message, string author)
         {
-            ValidateString(message);
-            ValidateString(author);
+            if (string.IsNullOrWhiteSpace(message))
+                throw new ArgumentNullException(nameof(message));
+
+            if (string.IsNullOrWhiteSpace(author))
+                throw new ArgumentNullException(nameof(author));
 
             _messagesCount++;
             _messages.Add(new Message(_messagesCount, message, author));
@@ -22,11 +25,5 @@ namespace GameLobby
 
         public IEnumerable<Message> LoadSince(int lastMessageId) =>
             _messages.SkipWhile(x => x.Id <= lastMessageId);
-
-        private void ValidateString(string message)
-        {
-            if (string.IsNullOrWhiteSpace(message))
-                throw new ArgumentNullException();
-        }
     }
 }

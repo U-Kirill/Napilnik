@@ -14,10 +14,10 @@ namespace GameLobby
         public void Connect(Player player, ILobby lobby)
         {
             if (!HasLobby(lobby))
-                throw new InvalidOperationException();
+                throw new InvalidOperationException("The lobby is absent in this game");
 
             if (IsAnyLobbiesHas(player))
-                throw new InvalidOperationException();
+                throw new InvalidOperationException("Player already in a lobby");
 
             Lobby targetLobby = GetLobby(lobby);
             LobbyConnection connection = new LobbyConnection(player, targetLobby);

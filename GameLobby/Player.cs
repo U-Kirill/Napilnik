@@ -15,10 +15,10 @@ namespace GameLobby
         public Player(string name, IMessageView messageView)
         {
             if (string.IsNullOrWhiteSpace(name))
-                throw new ArgumentNullException();
+                throw new ArgumentNullException(nameof(name));
 
             Name = name;
-            _messageView = messageView ?? throw new ArgumentNullException();
+            _messageView = messageView ?? throw new ArgumentNullException(nameof(messageView));
         }
 
         public string Name { get; }
@@ -28,7 +28,7 @@ namespace GameLobby
         public void Connect(ILobbyConnection connection)
         {
             if (IsConnected)
-                throw new InvalidOperationException();
+                throw new InvalidOperationException("Player already connected");
 
             _connection = connection;
             _connection.ChatUpdated += ShowMessage;
@@ -74,7 +74,7 @@ namespace GameLobby
         private void ValidateConnect()
         {
             if (!IsConnected)
-                throw new InvalidOperationException();
+                throw new InvalidOperationException("Player not connected");
         }
 
         private IEnumerable<Message> GetUnreadMessage()
