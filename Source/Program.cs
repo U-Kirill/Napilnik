@@ -6,7 +6,7 @@ namespace Source
 {
   public class Program
   {
-    static void Main(string[] args)
+    static void Main()
     {
       string secretKey = "123456789";
       Order order = new Order(1, 12000);
