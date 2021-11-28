@@ -1,3 +1,4 @@
+using System;
 using Source.Builder;
 using Source.Builder.Hash;
 using Source.Builder.Info;
@@ -9,14 +10,20 @@ namespace Source.PaymentSystem
         private const string RootUrl = "system3.com";
         private const string OrderKeyword = "pay";
 
-        private string _secretKey;
+        private readonly string _secretKey;
 
         public PayPal(string secretKey)
         {
             _secretKey = secretKey;
         }
 
-        public string GetPayingLink(Order order) =>
+        public string GetPayingLink(Order order)
+        {
+            order = order ?? throw new ArgumentNullException(nameof(order));
+            return GetLink(order);
+        }
+
+        private string GetLink(Order order) =>
             PaylinkBuilder.Create(RootUrl)
                 .AddOrderKeyword(OrderKeyword)
                 .AddInfo(new AmountInfo(order.Amount))
