@@ -19,8 +19,7 @@ namespace Source
         new WebMoney(),
         new PayPal(secretKey),
       };
-
-
+      
       paymentSystems.ForEach(x => Console.WriteLine(x.GetPayingLink(order)));
       Console.ReadLine();
 
