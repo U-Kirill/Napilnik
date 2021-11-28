@@ -17,9 +17,9 @@ namespace Source.PaymentSystem
 
         private string GetLink(Order order) =>
             PaylinkBuilder.Create(RootUrl)
-                .AddOrderKeyword(OrderKeyword)
-                .AddHash(new FakeMd5Hash(order.Id))
-                .AddHash(new IdentityHash(order.Amount.ToString()))
+                .WithOrderKeyword(OrderKeyword)
+                .WithHash(new FakeMd5Hash(order.Id))
+                .WithHash(new IdentityHash(order.Amount.ToString()))
                 .Build();
     }
 }

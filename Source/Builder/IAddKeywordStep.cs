@@ -2,6 +2,6 @@ namespace Source.Builder
 {
     public interface IAddKeywordStep
     {
-        IAddInfoOrHashStep AddOrderKeyword(string keyword);
+        IAddInfoOrHashStep WithOrderKeyword(string keyword);
     }
 }

@@ -18,9 +18,9 @@ namespace Source.PaymentSystem
 
         private string GetLink(Order order) =>
             PaylinkBuilder.Create(RootUrl)
-                .AddOrderKeyword(OrderKeyword)
-                .AddInfo(new CombinedAmountCurrencyInfo(order.Amount, "RUB"))
-                .AddHash(new FakeMd5Hash(order.Id))
+                .WithOrderKeyword(OrderKeyword)
+                .WithInfo(new CombinedAmountCurrencyInfo(order.Amount, "RUB"))
+                .WithHash(new FakeMd5Hash(order.Id))
                 .Build();
     }
 }

@@ -21,7 +21,7 @@ namespace Source.Builder
             _accumulatedUrl = rootUrl + SiteSplitSymbol;
         }
 
-        public IAddInfoOrHashStep AddOrderKeyword(string keyword)
+        public IAddInfoOrHashStep WithOrderKeyword(string keyword)
         {
             if (string.IsNullOrWhiteSpace(keyword))
                 throw new ArgumentNullException(nameof(keyword));
@@ -30,7 +30,7 @@ namespace Source.Builder
             return this;
         }
 
-        public IAddInfoOrHashStep AddInfo(IInfoProvider infoProvider)
+        public IAddInfoOrHashStep WithInfo(IInfoProvider infoProvider)
         {
             infoProvider = infoProvider ?? throw new ArgumentNullException(nameof(infoProvider));
 
@@ -38,7 +38,7 @@ namespace Source.Builder
             return this;
         }
 
-        public IAddHashOrBuildStep AddHash(IHashProvider hashProvider)
+        public IAddHashOrBuildStep WithHash(IHashProvider hashProvider)
         {
             hashProvider = hashProvider ?? throw new ArgumentNullException(nameof(hashProvider));
 

@@ -25,12 +25,12 @@ namespace Source.PaymentSystem
 
         private string GetLink(Order order) =>
             PaylinkBuilder.Create(RootUrl)
-                .AddOrderKeyword(OrderKeyword)
-                .AddInfo(new AmountInfo(order.Amount))
-                .AddInfo(new CurrencyInfo("RUB"))
-                .AddHash(new FakeSha1Hash(order.Amount))
-                .AddHash(new IdentityHash(order.Id.ToString()))
-                .AddHash(new IdentityHash(_secretKey))
+                .WithOrderKeyword(OrderKeyword)
+                .WithInfo(new AmountInfo(order.Amount))
+                .WithInfo(new CurrencyInfo("RUB"))
+                .WithHash(new FakeSha1Hash(order.Amount))
+                .WithHash(new IdentityHash(order.Id.ToString()))
+                .WithHash(new IdentityHash(_secretKey))
                 .Build();
     }
 }
