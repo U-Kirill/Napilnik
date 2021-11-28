@@ -65,9 +65,8 @@ namespace Source
     public string GetPayingLink(Order order) =>
       PaylinkBuilder.Create(RootUrl)
         .AddOrderKeyword(OrderKeyword)
-        .AddHash(new CombinedHash(
-          new FakeMd5Hash(order.Id),
-          new IdentityHash(order.Amount.ToString())))
+        .AddHash(new FakeMd5Hash(order.Id))
+        .AddHash(new IdentityHash(order.Amount.ToString()))
         .Build();
   }
 
@@ -88,10 +87,9 @@ namespace Source
         .AddOrderKeyword(OrderKeyword)
         .AddInfo(new AmountInfo(order.Amount))
         .AddInfo(new CurrencyInfo("RUB"))
-        .AddHash(new CombinedHash(
-          new FakeSha1Hash(order.Amount),
-          new IdentityHash(order.Id.ToString()),
-          new IdentityHash(_secretKey)))
+        .AddHash(new FakeSha1Hash(order.Amount))
+        .AddHash(new IdentityHash(order.Id.ToString()))
+        .AddHash(new IdentityHash(_secretKey))
         .Build();
   }
 

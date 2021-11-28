@@ -5,45 +5,54 @@
         IAddInfoOrHashStep AddOrderKeyword(string keyword);
     }
 
-    public interface IAddInfoOrHashStep
-    {
-        IAddInfoOrHashStep AddInfo(IInfoProvider infoProvider);
-        IPaylinkBuilder AddHash(IHashProvider hashProvider);
-    }
-
     public class PaylinkBuilder : IAddKeyworldStep, IAddInfoOrHashStep
     {
-        private string accumulatedUrl;
+        private const string HashSplitSymbol = "+";
+        private const string InfoSplitSymbol = "&";
+        private const string OrderSplitSymbol = "?";
+        private const string SiteSplitSymbol = "/";
         
+        private string accumulatedUrl;
+
+        public static IAddKeyworldStep Create(string rootUrl) => new PaylinkBuilder(rootUrl);
+
         private PaylinkBuilder(string rootUrl)
         {
-            accumulatedUrl = rootUrl + "/";
+            accumulatedUrl = rootUrl + SiteSplitSymbol;
         }
 
         public IAddInfoOrHashStep AddOrderKeyword(string keyword)
         {
-            accumulatedUrl += keyword + "?";
+            Append(keyword, OrderSplitSymbol);
             return this;
         }
 
         public IAddInfoOrHashStep AddInfo(IInfoProvider infoProvider)
         {
-            accumulatedUrl += infoProvider.Info + "&";
+            Append(infoProvider.Info, InfoSplitSymbol);
             return this;
         }
 
-        public IPaylinkBuilder AddHash(IHashProvider hashProvider)
+        public IAddHashStep AddHash(IHashProvider hashProvider)
         {
-            accumulatedUrl += hashProvider.GetHash();
+            Append(hashProvider.GetHash(), HashSplitSymbol);
             return this;
         }
-        
-        public static IAddKeyworldStep Create(string rootUrl)
-        {
-            return new PaylinkBuilder(rootUrl);
-        }
-        
-        public string Build() => accumulatedUrl;
+
+        public string Build() => accumulatedUrl.TrimEnd(HashSplitSymbol.GetPinnableReference());
+
+        private void Append(string body, string splitSymbol) =>
+            accumulatedUrl += body + splitSymbol;
+    }
+
+    public interface IAddInfoOrHashStep : IAddHashStep
+    {
+        IAddInfoOrHashStep AddInfo(IInfoProvider infoProvider);
+    }
+
+    public interface IAddHashStep : IPaylinkBuilder
+    {
+        IAddHashStep AddHash(IHashProvider hashProvider);
     }
 
     public interface IHashProvider
